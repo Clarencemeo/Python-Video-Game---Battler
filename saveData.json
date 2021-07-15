@@ -1,1 +1,5 @@
-{"equippedSkills": ["Fireball", "Zap", "Freezing Bolt", "Motivate"]}
+{"equippedSkills": ["Fireball", "Zap", "Freezing Bolt", "Motivate"],
+"weaponInventory": ["Scythe", "Silver Sword"],
+"armorInventory": ["Plating"],
+"currentWeaponEquip": "Scythe",
+"currentArmorEquip": "Plating"}
