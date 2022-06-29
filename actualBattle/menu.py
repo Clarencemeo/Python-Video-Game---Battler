@@ -157,3 +157,11 @@ class CreditsMenu(Menu):
             self.game.draw_text(
                 'Made by Clarence', 15, self.game.WIDTH/2, self.game.HEIGHT/2 + 10, self.game.WHITE)
             self.blit_screen(self.game.display)
+
+
+class InventoryMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+
+    def display_menu(self):
+        pass

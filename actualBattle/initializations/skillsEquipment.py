@@ -18,8 +18,10 @@ def init():
 
     # Weapon (Name, Speed, Attack, Magic, Crit Rate, Element, Scope)
     # Armor (Name, Speed, Health, physical defense, magical defense, luck, elemental resist)
-    scythe = Weapon("Flaming Scythe", 0, 3, 3, 0.05, 'Fire', "Multiple")
-    silverSword = Weapon("Silver Sword", 5, 1, 0, 0.03, 'Physical', "Single")
+    scythe = Weapon("Flaming Scythe", 0, 3, 3, 0.05, 'Fire',
+                    "Multiple", "Assets/FlamingScythe.png")
+    silverSword = Weapon("Silver Sword", 5, 1, 0, 0.03,
+                         'Physical', "Single", "Assets/SilverSword.png")
     plating = Armor("Plating", 2, 15, 1, 1, 1, {
                     'Fire': 3, 'Water': 2, 'Electric': 0, 'Ice': 5, 'Dark': 3, 'Light': -1, 'Physical': 0})
     initializations.globalVariables.everyWeapon = [scythe, silverSword]

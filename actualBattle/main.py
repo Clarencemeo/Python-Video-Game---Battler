@@ -10,6 +10,3 @@ g = mainGame()
 while g.running:
     g.curr_menu.display_menu()
     g.game_loop()
-
-    # forestMenu = pygame.transform.scale(pygame.image.load(
-    #     os.path.join('Assets', 'mainMenu.jpg')), (self.game.WIDTH, self.game.HEIGHT))
