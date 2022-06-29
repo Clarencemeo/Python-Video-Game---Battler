@@ -11,14 +11,15 @@ class Menu():
         self.game = game
         self.mid_w, self.mid_h = self.game.WIDTH/2, self.game.HEIGHT/2
         self.run_display = True
-        self.cursor_rect = pygame.Rect(0, 0, 20, 20)
-        self.offset = - 100  # want our cursor to be left of the menu
+        self.cursor_rect = pygame.Rect(0, 0, 15, 15)
+        self.offset = - 60  # want our cursor to be left of the menu
 
     def draw_cursor(self):
-        self.game.draw_text('*', 15, self.cursor_rect.x, self.cursor_rect.y)
+        self.game.draw_text('>', 30, self.cursor_rect.x,
+                            self.cursor_rect.y, self.game.BLACK)
 
-    def blit_screen(self):
-        self.game.window.blit(self.game.display, ((0, 0)))
+    def blit_screen(self, display):
+        self.game.window.blit(display, ((0, 0)))
         pygame.display.update()
         self.game.reset_keys()
 
@@ -32,20 +33,25 @@ class MainMenu(Menu):  # inherit values of base class menu
         self.optionsx, self.optionsy = self.mid_w, self.mid_h + 50
         self.creditsx, self.creditsy = self.mid_w, self.mid_h + 70
         self.cursor_rect.midtop = (self.startx + self.offset, self.starty)
+        self.forestMenu = pygame.transform.scale(pygame.image.load(
+            os.path.join('Assets', 'mainMenu.jpg')), (self.game.WIDTH, self.game.HEIGHT))
 
     def display_menu(self):
         self.run_display = True
         while self.run_display:
             self.game.check_events()
             self.check_input()
-            self.game.display.fill(self.game.BLACK)
+            self.game.display.blit(self.forestMenu, (0, 0))
             self.game.draw_text(
-                'Main Menu', 20, self.game.WIDTH/2, self.game.HEIGHT/2 - 20)
-            self.game.draw_text("Start Game", 20, self.startx, self.starty)
-            self.game.draw_text("Options", 20, self.optionsx, self.optionsy)
-            self.game.draw_text("Credits", 20, self.creditsx, self.creditsy)
+                'Turn Based Dungeon', 50, self.game.WIDTH/2, self.game.HEIGHT/2 - 20, self.game.BLACK)
+            self.game.draw_text("Start Game", 20, self.startx,
+                                self.starty, self.game.BLACK)
+            self.game.draw_text("Options", 20, self.optionsx,
+                                self.optionsy, self.game.BLACK)
+            self.game.draw_text("Credits", 20, self.creditsx,
+                                self.creditsy, self.game.BLACK)
             self.draw_cursor()
-            self.blit_screen()
+            self.blit_screen(self.game.display)
 
     def move_cursor(self):
         # tracks where the cursor should be
@@ -106,11 +112,13 @@ class OptionsMenu(Menu):
             self.check_input()
             self.game.display.fill((0, 0, 0))
             self.game.draw_text(
-                "Options", 20, self.game.WIDTH/2, self.game.HEIGHT/2 - 30)
-            self.game.draw_text('Volume', 15, self.volx, self.voly)
-            self.game.draw_text("Controls", 15, self.controlsx, self.controlsy)
+                "Options", 20, self.game.WIDTH/2, self.game.HEIGHT/2 - 30, self.game.WHITE)
+            self.game.draw_text('Volume', 15, self.volx,
+                                self.voly, self.game.WHITE)
+            self.game.draw_text("Controls", 15, self.controlsx,
+                                self.controlsy, self.game.WHITE)
             self.draw_cursor()
-            self.blit_screen()
+            self.blit_screen(self.game.display)
 
     def check_input(self):
         if self.game.BACK_KEY:
@@ -145,7 +153,7 @@ class CreditsMenu(Menu):
                 self.run_display = False
             self.game.display.fill(self.game.BLACK)
             self.game.draw_text(
-                'Credits', 20, self.game.WIDTH/2, self.game.HEIGHT/2 - 20)
+                'Credits', 20, self.game.WIDTH/2, self.game.HEIGHT/2 - 20, self.game.WHITE)
             self.game.draw_text(
-                'Made by Clarence', 15, self.game.WIDTH/2, self.game.HEIGHT/2 + 10)
-            self.blit_screen()
+                'Made by Clarence', 15, self.game.WIDTH/2, self.game.HEIGHT/2 + 10, self.game.WHITE)
+            self.blit_screen(self.game.display)

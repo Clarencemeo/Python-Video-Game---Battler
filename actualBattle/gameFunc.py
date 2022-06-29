@@ -40,7 +40,7 @@ class mainGame():
                 self.playing = False
             self.display.fill(self.BLACK)
             self.draw_text("Thanks for Playing", 30,
-                           self.WIDTH/2, self.HEIGHT/2)
+                           self.WIDTH/2, self.HEIGHT/2, self.WHITE)
             self.window.blit(self.display, (0, 0))
             pygame.display.update()
             self.reset_keys()
@@ -48,9 +48,9 @@ class mainGame():
     def reset_keys(self):
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
 
-    def draw_text(self, text, size, x, y):
-        font = pygame.font.SysFont('arial', 15)
-        text_surface = font.render(text, 1, self.WHITE)
+    def draw_text(self, text, size, x, y, color):
+        font = pygame.font.SysFont('arial', size)
+        text_surface = font.render(text, 1, color)
         text_rect = text_surface.get_rect()
         text_rect.center = (x, y)
         self.display.blit(text_surface, text_rect)
