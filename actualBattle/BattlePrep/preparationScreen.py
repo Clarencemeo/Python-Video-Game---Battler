@@ -1,6 +1,9 @@
 import time
 from IPython.display import clear_output
 from Fighters.player import Player
+import json
+import initializations.globalVariables
+globalVarPath = initializations.globalVariables
 ######################################################################
 #
 # All code in this section is for the preparation screen, where
@@ -28,14 +31,14 @@ def preparationScreen():
             while (keepArmoring):
                 invalidEquipArmor = False
                 print("You currently have " +
-                      protagonist.getArmor().getName() + " equipped.")
+                      globalVarPath.protagonist.getArmor().getName() + " equipped.")
                 armorInput = input(
                     "Which armor would you like to equip?\nType in 'inventory' to see all the armor you have.\nType in 'cancel' to stop equipping weapons.")
 
                 if (armorInput.upper() == "INVENTORY"):
                     clear_output()
                     print("Here are the armor in your inventory:")
-                    for armor in armorInventory:
+                    for armor in globalVarPath.armorInventory:
                         print(armor.getName())
                         invalidEquipArmor = True
 
@@ -44,26 +47,27 @@ def preparationScreen():
                     keepArmoring = False
                     invalidEquipArmor = True
 
-                if (protagonist.getArmor().getName().upper() == armorInput.upper()):
+                if (globalVarPath.protagonist.getArmor().getName().upper() == armorInput.upper()):
                     clear_output()
                     print("You already have that armor equipped.\n")
                     invalidEquipArmor = True
 
                 if (invalidEquipArmor == False):
-                    for armor in armorInventory:
+                    for armor in globalVarPath.armorInventory:
                         if (armor.getName().upper() == armorInput.upper()):
-                            protagonist.changeArmor(armor)
+                            globalVarPath.protagonist.changeArmor(armor)
                             clear_output()
                             print("Successfully equipped " +
-                                  protagonist.getArmor().getName() + "!")
+                                  globalVarPath.protagonist.getArmor().getName() + "!")
                             keepArmoring = False
                     if (keepArmoring):
                         clear_output()
                         print("Invalid selection.\n")
 
             with open('saveData.json', 'w') as outfile:
-                allSaveData["currentArmorEquip"] = protagonist.getArmor().getName()
-                json.dump(allSaveData, outfile)
+                globalVarPath.allSaveData["currentArmorEquip"] = globalVarPath.protagonist.getArmor(
+                ).getName()
+                json.dump(globalVarPath.allSaveData, outfile)
             #
             # CODE FOR EQUIPPING ARMOR ENDS HERE
             #
@@ -77,14 +81,14 @@ def preparationScreen():
             while (keepWeaponing):
                 invalidEquipWeapon = False
                 print("You currently have " +
-                      protagonist.getWeapon().getName() + " equipped.")
+                      globalVarPath.protagonist.getWeapon().getName() + " equipped.")
                 weaponInput = input(
                     "Which weapon would you like to equip?\nType in 'inventory' to see all the weapons you have.\nType in 'cancel' to stop equipping weapons.")
 
                 if (weaponInput.upper() == "INVENTORY"):
                     clear_output()
                     print("Here are the weapons in your inventory:")
-                    for weapon in weaponInventory:
+                    for weapon in globalVarPath.weaponInventory:
                         print(weapon.getName())
                         invalidEquipWeapon = True
 
@@ -93,27 +97,27 @@ def preparationScreen():
                     keepWeaponing = False
                     invalidEquipWeapon = True
 
-                if (protagonist.getWeapon().getName().upper() == weaponInput.upper()):
+                if (globalVarPath.protagonist.getWeapon().getName().upper() == weaponInput.upper()):
                     clear_output()
                     print("You already have that weapon equipped.\n")
                     invalidEquipWeapon = True
 
                 if (invalidEquipWeapon == False):
-                    for weapon in weaponInventory:
+                    for weapon in globalVarPath.weaponInventory:
                         if (weapon.getName().upper() == weaponInput.upper()):
-                            protagonist.changeWeapon(weapon)
+                            globalVarPath.protagonist.changeWeapon(weapon)
                             clear_output()
                             print("Successfully equipped " +
-                                  protagonist.getWeapon().getName() + "!")
+                                  globalVarPath.protagonist.getWeapon().getName() + "!")
                             keepWeaponing = False
                     if (keepWeaponing):
                         clear_output()
                         print("Invalid selection.\n")
 
             with open('saveData.json', 'w') as outfile:
-                allSaveData["currentWeaponEquip"] = protagonist.getWeapon(
+                globalVarPath.allSaveData["currentWeaponEquip"] = globalVarPath.protagonist.getWeapon(
                 ).getName()
-                json.dump(allSaveData, outfile)
+                json.dump(globalVarPath.allSaveData, outfile)
             #
             # CODE FOR EQUIPPING WEAPONS ENDS HERE
             #
@@ -135,13 +139,13 @@ def preparationScreen():
                 clear_output()
                 if (userInput.upper() == "EQUIPS"):
                     print("Here are the skills you currently have equipped:\n")
-                    printList(equippedSkills_string)
+                    printList(globalVarPath.equippedSkills_string)
                     otherOptions = True
                 if (userInput.upper() == "UNLOCKS"):
                     print("Here are the skills you currently have unlocked:\n")
-                    for item in unlockedSkills_string:
+                    for item in globalVarPath.unlockedSkills_string:
                         printEquipped = False
-                        for skill in equippedSkills_string:
+                        for skill in globalVarPath.equippedSkills_string:
                             if (item == skill):
                                 printEquipped = True
                         if (printEquipped):
@@ -154,10 +158,10 @@ def preparationScreen():
                     checkInvalidSkill = False
                 if (otherOptions == False):
                     # this for loop checks if the skill input the user submitted is an unlocked skill
-                    for skill_string in unlockedSkills_string:
+                    for skill_string in globalVarPath.unlockedSkills_string:
                         if (userInput.upper() == skill_string.upper()):
                             # this for loop makes sure the skill the user inputted is not CURRENTLY equippedt
-                            for skillsEquipped in equippedSkills_string:
+                            for skillsEquipped in globalVarPath.equippedSkills_string:
                                 if (userInput.upper() == skillsEquipped.upper()):
                                     print("You already have " +
                                           userInput + " equipped!")
@@ -168,7 +172,8 @@ def preparationScreen():
                                 print(
                                     "Here are the skills you currently have equipped:\n")
                                 # print every skill you have equipped currently
-                                printList(equippedSkills_string)
+                                printList(
+                                    globalVarPath.equippedSkills_string)
                                 replaceInput = input("Which skill would you like to replace with " +
                                                      skill_string + "?\nYou can also type in 'none' to cancel this selection.\n")
                                 if (replaceInput.upper() == "ATTACK"):
@@ -183,9 +188,9 @@ def preparationScreen():
                                     clear_output()
                                 else:
                                     # replace the skill at the index where we find it
-                                    for index, skill3 in enumerate(equippedSkills_string):
+                                    for index, skill3 in enumerate(globalVarPath.equippedSkills_string):
                                         if (skill3.upper() == replaceInput.upper()):
-                                            equippedSkills_string[index] = skill_string
+                                            globalVarPath.equippedSkills_string[index] = skill_string
                                             clear_output()
                                             print(
                                                 userInput + " was successfully equipped!")
@@ -204,13 +209,13 @@ def preparationScreen():
             # equippedSkills is the same as equippedSkills_string,
             # except the strings are turned into their Skill representations
 
-            for eachSkill in equippedSkills_string:
+            for eachSkill in globalVarPath.equippedSkills_string:
                 # for every string representation of a skill in the equippedSkills_string list,
                 # find the corresponding skill from the everySkill list and add it to equippedSkills
-                findSkill(eachSkill, equippedSkills)
+                findSkill(eachSkill, globalVarPath.equippedSkills)
             with open('saveData.json', 'w') as outfile:
-                allSaveData["equippedSkills"] = equippedSkills_string
-                json.dump(allSaveData, outfile)
+                globalVarPath.allSaveData["equippedSkills"] = globalVarPath.equippedSkills_string
+                json.dump(globalVarPath.allSaveData, outfile)
             #
             # Code for equipping skills ends here
             #

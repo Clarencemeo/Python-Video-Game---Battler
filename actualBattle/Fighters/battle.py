@@ -1,6 +1,8 @@
 import copy
 import time
 import random
+import initializations.globalVariables
+globalVarPath = initializations.globalVariables
 # given a list of possible monsters, assemble
 # a battle troop that the player will face.
 
@@ -45,26 +47,26 @@ def userSkillBattle(enemyTroops):
     invalidSkill = True
     invalidEnemy = True
     while(invalidSkill & invalidEnemy):
-        print("Your Health: " + str(protagonist.getCurrHealth()) + " | Your Energy: " +
-              str(protagonist.getEnergy()) + " | Your Level: " + str(protagonist.getLevel()))
+        print("Your Health: " + str(globalVarPath.protagonist.getCurrHealth()) + " | Your Energy: " +
+              str(globalVarPath.protagonist.getEnergy()) + " | Your Level: " + str(globalVarPath.protagonist.getLevel()))
         print("Here are the current enemies you are fighting:\n")
         for enemy in enemyTroops:
             print(enemy.getName() + " with " +
                   str(enemy.getHealth()) + " health.")
         print("\nHere are the skills you currently have equipped:\n")
         #print(basicAttack.getName() + " (Energy Cost: " + str(basicAttack.getEnergy()*-1) + ")"  )
-        printSkills(equippedSkills)
+        printSkills(globalVarPath.equippedSkills)
         chooseSkill = input("Which skill would you like to use?\n")
         if (chooseSkill.upper() == "SURRENDER"):
             invalidSkill = False
             invalidEnemy = False
-        for eachSkill in equippedSkills:
+        for eachSkill in globalVarPath.equippedSkills:
             if (chooseSkill.upper() == eachSkill.getName().upper()):
                 invalidSkill = False
                 # check if it's a buff/debuff skill and if so,
                 # change it up.
                 if (eachSkill.getScope() == "Single"):
-                    if (protagonist.getEnergy() < eachSkill.getEnergy()):
+                    if (globalVarPath.protagonist.getEnergy() < eachSkill.getEnergy()):
                         print("You do not have enough energy to use this skill!")
                     else:
                         clear_output()
@@ -79,7 +81,8 @@ def userSkillBattle(enemyTroops):
                             break
                         for enemy in enemyTroops:
                             if (target.upper() == enemy.getName().upper()):
-                                eachSkill.executeSkill(enemy, protagonist)
+                                eachSkill.executeSkill(
+                                    enemy, globalVarPath.protagonist)
                                 if (enemy.getHealth() <= 0):
                                     print("You defeated " +
                                           enemy.getName() + "!")
@@ -91,7 +94,8 @@ def userSkillBattle(enemyTroops):
                 elif (eachSkill.getScope() == "Multiple"):
                     clear_output()
                     for enemy in enemyTroops:
-                        eachSkill.executeSkill(enemy, protagonist)
+                        eachSkill.executeSkill(
+                            enemy, globalVarPath.protagonist)
                         if (enemy.getHealth() <= 0):
                             print("You defeated " + enemy.getName() + "!")
                             enemyTroops.remove(enemy)
@@ -104,8 +108,8 @@ def userSkillBattle(enemyTroops):
 
 def enemyAction(specificEnemy):
     chosenSkill = specificEnemy.randomSkillSelection()
-    chosenSkill.executeSkill(protagonist, specificEnemy)
-    if (protagonist.getCurrHealth() <= 0):
+    chosenSkill.executeSkill(globalVarPath.protagonist, specificEnemy)
+    if (globalVarPath.protagonist.getCurrHealth() <= 0):
         print("You lost.")
         exit()
 
@@ -119,26 +123,26 @@ def battleTime(monsters):
     # and debuffs, let's record the initial values of each stat!
     totalGoldReward = 0
     totalExperienceReward = 0
-    initialAttack = protagonist.getAttackDamage()
-    initialMagic = protagonist.getMagicDamage()
-    initialPhysdef = protagonist.getPhysicalDefense()
-    initialMagicdef = protagonist.getMagicalDefense()
+    initialAttack = globalVarPath.protagonist.getAttackDamage()
+    initialMagic = globalVarPath.protagonist.getMagicDamage()
+    initialPhysdef = globalVarPath.protagonist.getPhysicalDefense()
+    initialMagicdef = globalVarPath.protagonist.getMagicalDefense()
     # can add a check to see if buffed version of stats
     # is a percentage better than the initial stats
     # to see if the buff should be restricted.
     battleTroopers = assembleBattleTroop(monsters, 2)
     # below is for calculating rewards, since the original battleTroopers will be modified as enemies get defeated.
     tempBattleTroopers = assembleBattleTroop(monsters, 2)
-    protagSpeed = protagonist.getSpeed()
-    protagonist.resetTurnGauge()
+    protagSpeed = globalVarPath.protagonist.getSpeed()
+    globalVarPath.protagonist.resetTurnGauge()
     while(len(battleTroopers) > 0):
         # the turn gauge is adjusted based on the users speed.
         # The more speed the user has, the faster the turn gauge fills up,
         # which means the user can take more actions.
-        protagonist.changeTurnGauge(protagSpeed)
-        if (protagonist.getTurnGauge() >= 50):
+        globalVarPath.protagonist.changeTurnGauge(protagSpeed)
+        if (globalVarPath.protagonist.getTurnGauge() >= 50):
             userSkillBattle(battleTroopers)
-            protagonist.resetTurnGauge()
+            globalVarPath.protagonist.resetTurnGauge()
             clear_output()
         for enemy in battleTroopers:
             enemy.changeTurnGauge(enemy.getSpeed())
@@ -154,9 +158,12 @@ def battleTime(monsters):
         totalExperienceReward += eachMonster.getExperienceReward()
     print("Gold gained: " + str(totalGoldReward))
     time.sleep(0.5)
-    levelUpCalculation(protagonist, totalExperienceReward, 'saveData.json')
+    levelUpCalculation(globalVarPath.protagonist,
+                       totalExperienceReward, 'saveData.json')
     time.sleep(0.5)
     with open('saveData.json', 'w') as outfile:
-        allSaveData["currHealth"] = protagonist.getCurrHealth()
-        allSaveData["energy"] = protagonist.getEnergy()
-        json.dump(allSaveData, outfile)
+        globalVarPath.allSaveData["currHealth"] = globalVarPath.protagonist.getCurrHealth(
+        )
+        globalVarPath.allSaveData["energy"] = globalVarPath.protagonist.getEnergy(
+        )
+        json.dump(globalVarPath.allSaveData, outfile)
