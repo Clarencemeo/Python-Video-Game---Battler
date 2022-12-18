@@ -38,6 +38,9 @@ class Enemy:
     def getHealth(self):
         return self.health
 
+    def getStringHealth(self):
+        return str(self.health)
+
     def getGoldReward(self):
         return self.goldReward
 

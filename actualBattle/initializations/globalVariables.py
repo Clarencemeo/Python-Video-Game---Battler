@@ -1,3 +1,6 @@
+from BattlePrep import bag
+
+
 def init():
     global protagonist
     protagonist = ""
@@ -7,9 +10,10 @@ def init():
     everyWeapon = []
     global everyArmor
     everyArmor = []
-
     global equippedSkills
     equippedSkills = []
+    global monsterList1
+    monsterList1 = []
 
     global allUnlocksFromJson
     allUnlocksFromJson = {}
@@ -22,6 +26,8 @@ def init():
     global currentWeapon
     currentWeapon = ""
     currentArmor = ""
+    global itemBag
+    itemBag = bag.Inventory(20)
     global ourStage
     global ourNode
     ourStage = 1

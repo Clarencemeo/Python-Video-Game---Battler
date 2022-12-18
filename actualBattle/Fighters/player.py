@@ -1,6 +1,8 @@
 class Player:
-    def __init__(self, energy, health, currHealth, gold, experience, level, weapon, armor, skills, elementalResistances):
+    def __init__(self, energy, currEnergy, health, currHealth, gold, experience, level, weapon, armor, skills, elementalResistances):
         self.energy = energy
+        # currEnergy was not in original saveData
+        self.currEnergy = currEnergy
         self.health = health + armor.health
         self.currHealth = currHealth
         self.gold = gold
@@ -84,6 +86,9 @@ class Player:
 
     def getEnergy(self):
         return self.energy
+
+    def getCurrEnergy(self):
+        return self.currEnergy
 
     def getAttackDamage(self):
         return self.attackDamage

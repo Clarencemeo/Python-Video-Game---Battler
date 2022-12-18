@@ -16,7 +16,7 @@ def assembleBattleTroop(monsterList, count):
     battleTroopDictionary = dict.fromkeys(monsterList, 1)
     finalBattleTroop = []
     while (count > 0):
-        randomEnemyIndex = randint(0, len(monsterList)-1)
+        randomEnemyIndex = random.randint(0, len(monsterList)-1)
         randomEnemy = monsterList[randomEnemyIndex]
         for enemy in finalBattleTroop:
             # check if the enemy being added is already in the troop.

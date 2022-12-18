@@ -5,7 +5,7 @@ globalVarPath = initializations.globalVariables
 globalVarPath.init()
 skillsEquipmentPath = initializations.skillsEquipment
 skillsEquipmentPath.init()
-print(globalVarPath.everySkill)
+print(skillsEquipmentPath.silverSword)
 g = mainGame()
 while g.running:
     g.curr_menu.display_menu()

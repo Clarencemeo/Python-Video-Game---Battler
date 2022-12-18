@@ -43,6 +43,11 @@ class Skill:
 
     # skill type refers to physical, magical, or neutral damage
     def executeSkill(self, target, user):
+        printer = ""
+        flagCrit = False
+        flagWeakness = False
+        flagStrength = False
+        flagDefeated = False
         # establish lower and upper bounds of damage
         rawDamage = randint(self.baseDmg-self.variationDmg,
                             self.baseDmg+self.variationDmg)
@@ -51,32 +56,42 @@ class Skill:
             overallDamage = rawDamage + user.attackDamage - \
                 target.physicalDefense - \
                 target.elementalResistances[self.element]
+            print(overallDamage)
             # below conditional statement is used to calculate if the hit is a critical strike
             if (random.uniform(0, 1) <= user.criticalRate):
                 overallDamage *= 1.5
-                print("Critical Strike!")
+                flagCrit = True
             # the two below conditional statements are used to calculate elemental resistances
             if (target.elementalResistances[self.element] > 5):
-                print("Target is resistant to this element!")
+                flagStrength = True
             if (target.elementalResistances[self.element] < 0):
-                print("Target is weak to this element!")
+                flagWeakness = True
             # below conditional statement is to make sure the damage does not go negative before the next line
             if (overallDamage < 0):
                 overallDamage = 0
             target.adjustHealth(-1 * overallDamage)
+            # if target.getHealth() <= 0:
+            #    flagDefeated = True
             # the two below conditional statements print a statement based on if the user of the skill was the player or the enemy
             if (isinstance(user, Player)):
-                print("You dealt " + str(overallDamage) +
-                      " damage to the enemy " + target.name + "!")
-                print(target.getName() + " now has " +
-                      str(target.getHealth()) + " health!\n")
+                if (flagCrit):
+                    printer = ("CRITICAL! You dealt " + str(overallDamage) +
+                               " damage to the enemy " + target.name + "!")
+                elif (flagWeakness):
+                    printer = ("Enemy is weak to " + self.element + "! You dealt " + str(overallDamage) +
+                               " damage to the enemy " + target.name + "!")
+                elif (flagStrength):
+                    printer = ("Enemy resists " + self.element + "! You dealt " + str(overallDamage) +
+                               " damage to the enemy " + target.name + "!")
+                else:
+                    printer = ("You dealt " + str(overallDamage) +
+                               " damage to the enemy " + target.name + "!")
                 # time.sleep in order to give the user time to read the output
-                time.sleep(2)
             if (isinstance(user, Enemy)):
-                print(user.getName() + " dealt " +
-                      str(overallDamage) + " damage to you!")
-                print("You now have " + str(target.getCurrHealth()) + " health!\n")
-                time.sleep(2)
+                printer = (user.getName() + " dealt " +
+                           str(overallDamage) + " damage to you!")
+                printer = ("You now have " +
+                           str(target.getCurrHealth()) + " health!")
 
         # same process as above, but taking into account magic damage and removing the ability to critical hit
         if (self.skillType == 'Magical'):
@@ -94,17 +109,16 @@ class Skill:
                 print("You dealt " + str(overallDamage) +
                       " damage to the enemy " + target.name + "!")
                 print(target.getName() + " now has " +
-                      str(target.getHealth()) + " health!\n")
-                time.sleep(2)
+                      str(target.getHealth()) + " health!")
             if (isinstance(user, Enemy)):
                 print(user.getName() + " used " + self.name +
                       " and dealt " + str(overallDamage) + " damage to you!")
-                print("You now have " + str(target.getCurrHealth()) + " health!\n")
-                time.sleep(2)
+                print("You now have " + str(target.getCurrHealth()) + " health!")
             # put a function here that checks the health for game overs and/or enemy defeats
             # or just check after we call this function
         # clear_output()
-        return overallDamage
+        # return overallDamage
+        return printer
 
 
 class BuffDebuffSkill:
