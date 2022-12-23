@@ -4,7 +4,7 @@ from random import randint
 
 class Enemy:
     def __init__(self, health, skillDictionary, dropsDictionary, name, goldReward, experienceReward, speed, attackDamage, magicDamage,
-                 physicalDefense, magicDefense, elementalResistances):
+                 physicalDefense, magicDefense, elementalResistances, critRate):
         self.health = health
         self.skillDictionary = skillDictionary
         self.dropsDictionary = dropsDictionary
@@ -19,6 +19,7 @@ class Enemy:
         self.physicalDefense = physicalDefense
         self.magicDefense = magicDefense
         self.elementalResistances = elementalResistances
+        self.criticalRate = critRate
 
     def adjustHealth(self, health):
         self.health += health

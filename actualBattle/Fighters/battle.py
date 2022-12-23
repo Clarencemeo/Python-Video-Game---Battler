@@ -108,10 +108,11 @@ def userSkillBattle(enemyTroops):
 
 def enemyAction(specificEnemy):
     chosenSkill = specificEnemy.randomSkillSelection()
-    chosenSkill.executeSkill(globalVarPath.protagonist, specificEnemy)
+    result = chosenSkill.executeSkill(globalVarPath.protagonist, specificEnemy)
     if (globalVarPath.protagonist.getCurrHealth() <= 0):
         print("You lost.")
         exit()
+    return result
 
 # call battleTime whenever you start a battle
 # TODO: Implement drops from the enemy as well as updating the save file based on the users

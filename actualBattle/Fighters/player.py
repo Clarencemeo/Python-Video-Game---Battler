@@ -33,7 +33,7 @@ class Player:
         self.currHealth += health
 
     def adjustNegativeEnergy(self, energy):
-        self.energy -= energy
+        self.currEnergy -= energy
 
     def adjustGold(self, gold):  # gold adjustments can be positive or negative
         self.gold += gold

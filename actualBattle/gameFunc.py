@@ -9,6 +9,9 @@ class mainGame():
         self.WIDTH, self.HEIGHT = 900, 500
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
+        self.GREEN = (73, 122, 7)
+        self.RED = (245, 40, 29)
+        self.RED2 = (204, 18, 8)
         # self.running refers to when the game is open, self.playing refers to when the player is actually playing the game (i.e not in main menu)
         self.running, self.playing = True, False
         # blitzing the display onto the window

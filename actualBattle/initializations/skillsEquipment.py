@@ -9,15 +9,22 @@ import initializations.globalVariables
 def init():
     # Below are the initializations for the skills, weapons, and armor.
     # Skill(Name, base dmg, var dmg, scope, energy cost, element, skillType)
-    fireballSpell = Skill("Fireball", 7.5, 2.5, "Single", 8, 'Fire', "Magical")
-    darkStrike = Skill("Dark Strike", 7.5, 2.5, "Single", 8, 'Dark', "Magical")
-    freezeSpell = Skill("Freezing Bolt", 7.5, 2.5,
-                        "Single", 8, 'Ice', "Magical")
-    motivate = BuffDebuffSkill("Motivate", 5, "Attack Damage", 5, "Buff")
-    zap = Skill("Zap", 7.5, 2.5, "Single", 8, "Electric", "Magical")
-    basicAttack = Skill("Attack", 6, 1, "Single", 0, "Physical", "Physical")
+    fireballSpell = Skill("Fireball", 7.5, 2.5, "Single",
+                          8, 'Fire', "Magical", (245, 72, 66))
+    darkStrike = Skill("Dark", 7.5, 2.5, "Single",
+                       8, 'Dark', "Magical", (97, 88, 87))
+    freezeSpell = Skill("Ice", 7.5, 2.5,
+                        "Single", 8, 'Ice', "Magical", (17, 250, 246))
+    motivate = BuffDebuffSkill(
+        "Motivate", 5, "Attack Damage", 5, "Buff", (203, 209, 209))
+    zap = Skill("Zap", 7.5, 2.5, "Single", 8,
+                "Electric", "Magical", (235, 231, 26))
+    basicAttack = Skill("Attack", 6, 1, "Single", 0,
+                        "Physical", "Physical", (0, 0, 0))
     initializations.globalVariables.everySkill = [basicAttack,
-                                                  fireballSpell, freezeSpell, motivate, zap]
+                                                  fireballSpell, darkStrike, freezeSpell, motivate, zap]
+    initializations.globalVariables.equippedSkills = [fireballSpell,
+                                                      freezeSpell, darkStrike, zap]
 
     # Weapon (Name, Speed, Attack, Magic, Crit Rate, Element, Scope)
     # Armor (Name, Speed, Health, physical defense, magical defense, luck, elemental resist)
@@ -41,9 +48,9 @@ def init():
     elementResistance2 = {'Fire': 7, 'Water': 2, 'Electric': 0,
                           'Ice': -3, 'Dark': 10, 'Light': -1, 'Physical': 0}
     slimeEnemy = Enemy(50, {freezeSpell: 75, zap: 100}, {
-                       plating: 0.25}, 'Slime', 10, 15, 5, 20, 20, 2, 4, elementResistance)
+                       plating: 0.25}, 'Slime', 10, 15, 5, 20, 20, 2, 4, elementResistance, 0.05)
     batEnemy = Enemy(25, {darkStrike: 75, fireballSpell: 100}, {
-                     plating: 0.25}, 'Bat', 10, 15, 15, 15, 15, 3, 3, elementResistance2)
+                     plating: 0.25}, 'Bat', 10, 15, 15, 15, 15, 3, 3, elementResistance2, 0.05)
     initializations.globalVariables.monsterList1 = [slimeEnemy, batEnemy]
 
     initializations.globalVariables.protagonist = Player(200, 200, 500, 500, 500, 0,
