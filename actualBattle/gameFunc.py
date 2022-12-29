@@ -1,3 +1,6 @@
+import sys
+from ahk.window import Window
+from ahk import AHK
 import pygame
 from menu import *
 pygame.font.init()
@@ -6,7 +9,6 @@ pygame.font.init()
 class mainGame():
     def __init__(self):
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY, self.RIGHT_KEY, self.LEFT_KEY = False, False, False, False, False, False
-        self.WIDTH, self.HEIGHT = 900, 500
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
         self.GREEN = (73, 122, 7)
@@ -15,9 +17,13 @@ class mainGame():
         # self.running refers to when the game is open, self.playing refers to when the player is actually playing the game (i.e not in main menu)
         self.running, self.playing = True, False
         # blitzing the display onto the window
-        self.display = pygame.Surface((self.WIDTH, self.HEIGHT))
-        self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption("Turn Based")
+        self.window = pygame.display.set_mode(
+            (0, 0), pygame.FULLSCREEN)
+        sizeTuple = pygame.display.get_window_size()
+        self.display = pygame.Surface(sizeTuple)
+        self.WIDTH, self.HEIGHT = sizeTuple[0], sizeTuple[1]
+
+        pygame.display.set_caption("TurnBased")
         self.main_menu = MainMenu(self)
         self.options = OptionsMenu(self)
         self.inventory = InventoryMenu(self)
@@ -46,6 +52,10 @@ class mainGame():
                     self.RIGHT_KEY = True
                 if event.key == pygame.K_LEFT:
                     self.LEFT_KEY = True
+                if event.key == pygame.K_ESCAPE:
+                    pygame.display.quit()
+                    pygame.quit()
+                    sys.exit()
 
     def game_loop(self):
         # self.playing is only true when you click start on the MainMenu class

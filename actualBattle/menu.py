@@ -202,6 +202,8 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         Menu.__init__(self, game)
         self.state = "Attack"
         self.state2 = "Enemy1"
+        self.speedDict = {}
+        self.speedList = []
         self.skillState = 0
         self.player_turn = True
         self.attackx, self.attacky = self.mid_w, self.mid_h + 50
@@ -218,6 +220,14 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         self.enemy1Info = ""
         self.enemy2Info = ""
 
+    def calculate_turn_order(self):
+        playerSpeed = globalVariables.protagonist.getSpeed()
+        self.speedDict['Player'] = playerSpeed
+        for eachEnemy in self.battleTroop:
+            self.speedDict[eachEnemy.getName()] = eachEnemy.getSpeed()
+        self.speedList = sorted(self.speedDict.items(),
+                                key=lambda x: x[1], reverse=True)
+
     def display_menu(self):
         self.run_display = True
         self.battleTroop = assembleBattleTroop(globalVariables.monsterList1, 2)
@@ -230,9 +240,9 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         self.game.display.blit(self.forestMenu, (0, 0))
         # only draw below if not picking skills
         self.game.draw_text("Your Health: " + str(globalVariables.protagonist.getCurrHealth()), 40, self.mid_w,
-                            self.mid_h-200, self.game.BLACK)
+                            self.mid_h-400, self.game.BLACK)
         self.game.draw_text("Your Energy: " + str(globalVariables.protagonist.getCurrEnergy()), 40, self.mid_w,
-                            self.mid_h-150, self.game.BLACK)
+                            self.mid_h-350, self.game.BLACK)
         if self.show_skills == False:
             self.game.draw_text("Attack", 40, self.attackx,
                                 self.attacky, self.game.BLACK)
@@ -255,14 +265,15 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             self.enemy1Info, 30, self.mid_w, self.mid_h+180, self.game.RED)
         self.game.draw_text(
             self.enemy2Info, 30, self.mid_w, self.mid_h+210, self.game.RED2)
+        self.calculate_turn_order()
         self.draw_cursor()
         self.blit_screen(self.game.display)
 
     def draw_enemy(self, enemy, xOffset):
         self.game.draw_text(
-            enemy.getName(), 40, self.mid_w-xOffset, self.mid_h-70, self.game.BLACK)
+            enemy.getName(), 40, self.mid_w-xOffset, self.mid_h-210, self.game.BLACK)
         self.game.draw_text(
-            "Health: " + enemy.getStringHealth(), 30, self.mid_w-xOffset, self.mid_h-30, self.game.BLACK)
+            "Health: " + enemy.getStringHealth(), 30, self.mid_w-xOffset, self.mid_h-170, self.game.BLACK)
 
     def use_attack(self, skill, enemy):
         # returns True if the attack defeats an enemy
@@ -295,7 +306,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
 
     def attack(self, skill):
         position_of_enemy1X = self.mid_w-180 + self.offset
-        position_of_enemy1Y = self.mid_h-70
+        position_of_enemy1Y = self.mid_h-210
         if len(self.battleTroop) == 1:
             if self.game.START_KEY:
                 menuConfirmSound.play()
@@ -315,7 +326,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                 print("zero1")
                 menuHoverSound.play()
                 self.state2 = self.cursor_two_options(
-                    self.state2, "Enemy1", "Enemy2", position_of_enemy1X, self.mid_w + self.offset, position_of_enemy1Y, self.mid_h-70)
+                    self.state2, "Enemy1", "Enemy2", position_of_enemy1X, self.mid_w + self.offset, position_of_enemy1Y, self.mid_h-210)
             elif self.game.START_KEY:
                 print("oxford")
                 menuConfirmSound.play()
@@ -378,25 +389,23 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                     self.skillState = self.cursor_two_options(self.skillState, 3, 2,
                                                               self.mid_w+290+self.offset, self.mid_w+120+self.offset, self.mid_h+60, self.mid_h+60)
             if self.game.BACK_KEY:
-                menuBackSound.play()
                 self.skillState = 0
-                self.state = 'Attack'
+                menuBackSound.play()
+                self.reinitialize()
                 self.cursor_rect.midtop = (
                     self.attackx + self.offset, self.attacky)
-                self.show_skills = False
             if self.game.START_KEY:
+                menuConfirmSound.play()
                 #self.show_skills = False
                 # self.attack(globalVariables.equippedSkills[self.skillState])
                 self.cursor_rect.midtop = (
-                    self.mid_w-180 + self.offset, self.mid_h-70)
+                    self.mid_w-180 + self.offset, self.mid_h-210)
                 self.use_skill = True
         elif self.game.BACK_KEY:
             menuBackSound.play()
             self.cursor_rect.midtop = (
                 self.attackx + self.offset, self.attacky)
-            self.state == 'Attack'
-            self.show_skills = False
-            #self.run_display = False
+            self.reinitialize()
         elif self.game.UP_KEY or self.game.DOWN_KEY:
             menuHoverSound.play()
             if self.state == 'Attack':
@@ -411,7 +420,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             menuConfirmSound.play()
             if self.state == "Attack":
                 self.cursor_rect.midtop = (
-                    self.mid_w-180 + self.offset, self.mid_h-70)
+                    self.mid_w-180 + self.offset, self.mid_h-210)
                 self.cursor_on_enemies = True
             if self.state == 'Skills':
                 self.cursor_rect.midtop = (
