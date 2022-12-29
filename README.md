@@ -7,6 +7,7 @@ unlock based on game progression, implemented with JSON files.
 - Various weapons, armor, items, and skills to spice up the gameplay
 - Multiple gameplay elements, such as Luck, Speed, Energy, and Elemental Resistances
 in order to add more depth
+- Authentication features and save data through the use of databases
 
 ### Soon to be Implemented
 
