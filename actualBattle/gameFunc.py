@@ -18,7 +18,7 @@ class mainGame():
         self.running, self.playing = True, False
         # blitzing the display onto the window
         self.window = pygame.display.set_mode(
-            (0, 0), pygame.FULLSCREEN)
+            (0, 0), pygame.FULLSCREEN, pygame.RESIZABLE)
         sizeTuple = pygame.display.get_window_size()
         self.display = pygame.Surface(sizeTuple)
         self.WIDTH, self.HEIGHT = sizeTuple[0], sizeTuple[1]

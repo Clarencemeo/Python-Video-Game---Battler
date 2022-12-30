@@ -5,6 +5,7 @@ from initializations import skillsEquipment
 from initializations import globalVariables
 import Fighters.battle
 from Fighters.battle import *
+from Fighters.enemy import Enemy
 import pygame
 import os
 pygame.mixer.init()
@@ -202,8 +203,10 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         Menu.__init__(self, game)
         self.state = "Attack"
         self.state2 = "Enemy1"
-        self.speedDict = {}
         self.speedList = []
+        # self.turnList will have a list of names in descending order
+        # of their speed stat
+        self.turnList = []
         self.skillState = 0
         self.player_turn = True
         self.attackx, self.attacky = self.mid_w, self.mid_h + 50
@@ -214,19 +217,9 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         self.cursor_on_skillMenu = False
         self.use_skill = False
         self.battleTroop = []
-        # damageInfo and skillInfo record how much damage and which skill you used
-        self.damageInfo = ""
-        self.skillInfo = ""
-        self.enemy1Info = ""
-        self.enemy2Info = ""
-
-    def calculate_turn_order(self):
-        playerSpeed = globalVariables.protagonist.getSpeed()
-        self.speedDict['Player'] = playerSpeed
-        for eachEnemy in self.battleTroop:
-            self.speedDict[eachEnemy.getName()] = eachEnemy.getSpeed()
-        self.speedList = sorted(self.speedDict.items(),
-                                key=lambda x: x[1], reverse=True)
+        self.information1 = ("", self.game.BLACK)
+        self.information2 = ("", self.game.BLACK)
+        self.information3 = ("", self.game.BLACK)
 
     def display_menu(self):
         self.run_display = True
@@ -238,6 +231,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         self.game.check_events()
         self.check_input()
         self.game.display.blit(self.forestMenu, (0, 0))
+        self.turnOrder = "Turn Order: " + self.calculate_turn_order()
         # only draw below if not picking skills
         self.game.draw_text("Your Health: " + str(globalVariables.protagonist.getCurrHealth()), 40, self.mid_w,
                             self.mid_h-400, self.game.BLACK)
@@ -260,12 +254,13 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             self.draw_enemy(self.battleTroop[0], 180)
             self.draw_enemy(self.battleTroop[1], 0)
         self.game.draw_text(
-            self.damageInfo, 30, self.mid_w, self.mid_h+150, self.game.WHITE)
+            self.information1[0], 30, self.mid_w, self.mid_h+150, self.information1[1])
         self.game.draw_text(
-            self.enemy1Info, 30, self.mid_w, self.mid_h+180, self.game.RED)
+            self.information2[0], 30, self.mid_w, self.mid_h+180, self.information2[1])
         self.game.draw_text(
-            self.enemy2Info, 30, self.mid_w, self.mid_h+210, self.game.RED2)
-        self.calculate_turn_order()
+            self.information3[0], 30, self.mid_w, self.mid_h+210, self.information3[1])
+        self.game.draw_text(self.turnOrder, 30, self.mid_w,
+                            self.mid_h-290, self.game.WHITE)
         self.draw_cursor()
         self.blit_screen(self.game.display)
 
@@ -279,13 +274,12 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         # returns True if the attack defeats an enemy
         result = skill.executeSkill(
             enemy, globalVariables.protagonist)
-        self.damageInfo = result
-        print(self.battleTroop)
+        self.information1 = result
         if (enemy.getHealth() <= 0):
             self.battleTroop.remove(enemy)
-            self.damageInfo = "You defeated the " + enemy.getName() + "!"
-            self.enemy1Info = ""
-            self.enemy2Info = ""
+            self.information1 = "You defeated the " + enemy.getName() + "!"
+            self.information2 = ""
+            self.information3 = ""
             return True
 
     def reinitialize(self):
@@ -304,53 +298,106 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             self.cursor_rect.midtop = (x1, y1)
         return tracker
 
+    def calculate_turn_order(self):
+        self.speedDict = {}
+        playerSpeed = globalVariables.protagonist.getSpeed()
+        self.speedDict['Player'] = playerSpeed
+        # create a dictionary that match
+        # each player & enemy with their respective speeds.
+        for eachEnemy in self.battleTroop:
+            self.speedDict[eachEnemy.getName()] = eachEnemy.getSpeed()
+        # generate a list comprised of tuples of the form
+        # (Name, Speed) in descending order of speed.
+        self.speedList = sorted(self.speedDict.items(),
+                                key=lambda x: x[1], reverse=True)
+        # turnOrder will be a list of names in descending order of speed
+        turnString = ""
+        self.turnList = []
+        for eachTuple in self.speedList:
+            self.turnList.append(eachTuple[0])
+            turnString += " -> "
+            turnString += (eachTuple[0])
+        return turnString
+
     def attack(self, skill):
         position_of_enemy1X = self.mid_w-180 + self.offset
         position_of_enemy1Y = self.mid_h-210
-        if len(self.battleTroop) == 1:
-            if self.game.START_KEY:
-                menuConfirmSound.play()
-                self.use_attack(skill, self.battleTroop[0])
-                self.player_turn = False
-                if (len(self.battleTroop) == 1):
-                    self.enemy1Info = Fighters.battle.enemyAction(
-                        self.battleTroop[0])
-                self.player_turn = True
-            elif self.game.BACK_KEY:
-                menuBackSound.play()
-                self.cursor_rect.midtop = (
-                    self.attackx + self.offset, self.attacky)
-                self.reinitialize()
-        elif len(self.battleTroop) == 2:
-            if self.game.RIGHT_KEY or self.game.LEFT_KEY:
-                print("zero1")
+        if len(self.battleTroop) == 0:
+            print("win")
+            exit()
+        if self.game.RIGHT_KEY or self.game.LEFT_KEY:
+            if (len(self.battleTroop) >= 2):
                 menuHoverSound.play()
                 self.state2 = self.cursor_two_options(
                     self.state2, "Enemy1", "Enemy2", position_of_enemy1X, self.mid_w + self.offset, position_of_enemy1Y, self.mid_h-210)
-            elif self.game.START_KEY:
-                print("oxford")
-                menuConfirmSound.play()
-                if self.state2 == "Enemy1":
-                    self.use_attack(skill, self.battleTroop[0])
-                elif self.state2 == "Enemy2":
-                    if self.use_attack(skill, self.battleTroop[1]) == True:
-                        self.state2 = "Enemy1"
-                        self.cursor_rect.midtop = (
-                            position_of_enemy1X, position_of_enemy1Y)
-                self.player_turn = False
-                self.enemy1Info = Fighters.battle.enemyAction(
-                    self.battleTroop[0])
-                if (len(self.battleTroop) > 1):
-                    self.enemy2Info = Fighters.battle.enemyAction(
-                        self.battleTroop[1])
-                self.player_turn = True
-            elif self.game.BACK_KEY:
-                menuBackSound.play()
-                self.state2 = "Enemy1"
-                self.cursor_rect.midtop = (
-                    self.attackx + self.offset, self.attacky)
-                self.reinitialize()
+            else:
+                pass
+        elif self.game.START_KEY:
+            menuConfirmSound.play()
+            if self.state2 == "Enemy1":
+                enemyTarget = self.battleTroop[0]
+            elif self.state2 == "Enemy2":
+                enemyTarget = self.battleTroop[1]
+             #       self.cursor_rect.midtop = (
+             #           position_of_enemy1X, position_of_enemy1Y)
+            self.player_turn = False
+            self.attackTurnOrder(enemyTarget, skill)
+            self.player_turn = True
+        elif self.game.BACK_KEY:
+            menuBackSound.play()
+            self.state2 = "Enemy1"
+            self.cursor_rect.midtop = (
+                self.attackx + self.offset, self.attacky)
+            self.reinitialize()
         #self.use_skill = False
+
+    def deleteFromList(self, element):
+        for i in self.turnList:
+            if i == element:
+                self.turnList.remove(i)
+
+    def attackTurnOrder(self, enemyTarget, skill):
+        counter = 1
+        for eachEntity in self.turnList:
+            if eachEntity == "Player":
+                skillInfo = skill.executeSkill(
+                    enemyTarget, globalVariables.protagonist)
+                if (enemyTarget.getHealth() <= 0):
+                    self.battleTroop.remove(enemyTarget)
+                    skillInfo = "You defeated the " + enemyTarget.getName() + "!"
+                    self.cursor_rect.midtop = (
+                        self.mid_w-180 + self.offset, self.mid_h-210)
+                    self.deleteFromList(enemyTarget.getName())
+                    self.state2 = "Enemy1"
+                    self.information1 = ("", self.game.BLACK)
+                    self.information2 = ("", self.game.BLACK)
+                    self.information3 = ("", self.game.BLACK)
+                if counter == 1:
+
+                    self.information1 = (skillInfo, self.game.WHITE)
+                elif counter == 2:
+                    self.information2 = (skillInfo, self.game.WHITE)
+                elif counter == 3:
+                    self.information3 = (skillInfo, self.game.WHITE)
+            else:
+                skillInfo = Fighters.battle.enemyAction(
+                    self.nameToEnemy(eachEntity))
+                if counter == 1:
+                    self.information1 = (skillInfo, self.game.RED)
+                elif counter == 2:
+                    self.information2 = (skillInfo, self.game.RED)
+                elif counter == 3:
+                    self.information3 = (skillInfo, self.game.RED)
+            counter += 1
+
+    def nameToEnemy(self, name):
+        for eachEnemy in self.battleTroop:
+            if eachEnemy.getName() == name:
+                return eachEnemy
+        return None
+
+    def actionTurnOrder(self):
+        pass
 
     def check_input(self):
         # this is when the player uses regular attack

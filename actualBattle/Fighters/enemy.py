@@ -63,6 +63,7 @@ class Enemy:
     # given the self.skillDictionary that has each
     # skill and their percent chance of being used,
     # pick a random skill from that dictionary.
+
     def randomSkillSelection(self):
         skillSelection = random.randint(0, 100)
         for skill in self.skillDictionary:

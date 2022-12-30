@@ -81,6 +81,7 @@ class Skill:
         # if target.getHealth() <= 0:
         #    flagDefeated = True
         # the two below conditional statements print a statement based on if the user of the skill was the player or the enemy
+
         if (isinstance(user, Player)):
             if (flagCrit):
                 printer = ("Used " + self.getName() + ". CRITICAL! You dealt " + str(overallDamage) +
