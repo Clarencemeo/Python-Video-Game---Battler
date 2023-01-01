@@ -109,9 +109,6 @@ def userSkillBattle(enemyTroops):
 def enemyAction(specificEnemy):
     chosenSkill = specificEnemy.randomSkillSelection()
     result = chosenSkill.executeSkill(globalVarPath.protagonist, specificEnemy)
-    if (globalVarPath.protagonist.getCurrHealth() <= 0):
-        print("You lost.")
-        exit()
     return result
 
 # call battleTime whenever you start a battle

@@ -9,17 +9,17 @@ import initializations.globalVariables
 def init():
     # Below are the initializations for the skills, weapons, and armor.
     # Skill(Name, base dmg, var dmg, scope, energy cost, element, skillType)
-    fireballSpell = Skill("Fireball", 7.5, 2.5, "Single",
+    fireballSpell = Skill("Fireball", "Deals low magical fire damage to one enemy.", 7.5, 2.5, "Single",
                           8, 'Fire', "Magical", (245, 72, 66))
-    darkStrike = Skill("Dark", 7.5, 2.5, "Single",
+    darkStrike = Skill("Dark",  "Deals low magical dark damage to one enemy.", 7.5, 2.5, "Single",
                        8, 'Dark', "Magical", (97, 88, 87))
-    freezeSpell = Skill("Ice", 7.5, 2.5,
+    freezeSpell = Skill("Ice",  "Deals low magical ice damage to one enemy.", 7.5, 2.5,
                         "Single", 8, 'Ice', "Magical", (17, 250, 246))
     motivate = BuffDebuffSkill(
         "Motivate", 5, "Attack Damage", 5, "Buff", (203, 209, 209))
-    zap = Skill("Zap", 7.5, 2.5, "Single", 8,
+    zap = Skill("Zap",  "Deals low magical electric damage to one enemy.", 7.5, 2.5, "Single", 8,
                 "Electric", "Magical", (235, 231, 26))
-    basicAttack = Skill("Attack", 6, 1, "Single", 0,
+    basicAttack = Skill("Attack",  "Attack an enemy. Effects differ based on weapon.", 6, 1, "Single", 0,
                         "Physical", "Physical", (0, 0, 0))
     initializations.globalVariables.everySkill = [basicAttack,
                                                   fireballSpell, darkStrike, freezeSpell, motivate, zap]

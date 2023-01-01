@@ -12,13 +12,13 @@ class Player:
         self.level = level
         self.turnGauge = 0
         self.skillList = skills
-        self.criticalRate = 0.05 + weapon.criticalRate
+        self.luck = 1
+        self.criticalRate = 0.05 + weapon.criticalRate + (self.luck/100)
         self.speed = 7 + weapon.speed + armor.speed
         self.attackDamage = 5 + weapon.attackDamage
-        self.magicDamage = 25 + weapon.magicDamage
+        self.magicDamage = 5 + weapon.magicDamage
         self.physicalDefense = 10 + armor.physicalDefense
         self.magicDefense = 10 + armor.magicDefense
-        self.luck = 0.05 + armor.luck
         # elemental resistance is mostly based on the armor
         self.elementalResistances = {'Fire': 0+armor.elementalResistances['Fire'],
                                      'Water': 0+armor.elementalResistances['Water'],
@@ -59,6 +59,18 @@ class Player:
     def adjustmagicDamage(self, value):
         self.magicDamage += value
 
+    def adjustDefense(self, value):
+        self.physicalDefense += value
+
+    def adjustMagDef(self, value):
+        self.magicDefense += value
+
+    def adjustSpeed(self, value):
+        self.speed += value
+
+    def adjustLuck(self, value):
+        self.luck += value
+
     def adjustExperience(self, value):
         self.experience += value
 
@@ -80,6 +92,12 @@ class Player:
 
     def getSpeed(self):
         return self.speed
+
+    def getLuck(self):
+        return self.luck
+
+    def getHealth(self):
+        return self.health
 
     def getCurrHealth(self):
         return self.currHealth

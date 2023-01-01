@@ -6,7 +6,7 @@ import time
 
 
 class Skill:
-    def __init__(self, name, baseDmg, variationDmg, scope, energyCost, element, skillType, color):
+    def __init__(self, name, description, baseDmg, variationDmg, scope, energyCost, element, skillType, color):
         # scope: determines if the target is one or multiple enemies
         # skillType: determines if the Skill is magical or physical
         self.name = name
@@ -17,6 +17,7 @@ class Skill:
         self.element = element
         self.skillType = skillType
         self.color = color
+        self.description = description
 
     def getEnergy(self):
         return self.energyCost
@@ -24,11 +25,17 @@ class Skill:
     def getColor(self):
         return self.color
 
+    def getDescription(self):
+        return self.description
+
     def getName(self):
         return self.name
 
     def getScope(self):
         return self.scope
+
+    def getSkillType(self):
+        return self.skillType
 
     def getElement(self):
         return self.element

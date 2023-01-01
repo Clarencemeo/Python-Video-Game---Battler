@@ -28,7 +28,6 @@ class mainGame():
         self.options = OptionsMenu(self)
         self.inventory = InventoryMenu(self)
         self.credits = CreditsMenu(self)
-        self.battle = BattleMenu(self)
         self.curr_menu = self.main_menu
 
     # Runs different things based on which event is detected; events include closing the game and pressing down certain buttons
@@ -57,17 +56,8 @@ class mainGame():
                     pygame.quit()
                     sys.exit()
 
-    def game_loop(self):
-        # self.playing is only true when you click start on the MainMenu class
-        while self.playing:
-            self.check_events()
-            if self.START_KEY:
-                # ensures that it doesn't loop again
-                self.playing = False
-            # NEXT STEPS: SHOULD SWITCH TO A NEW MENU
-            self.curr_menu = self.battle
-            pygame.display.update()
-            self.reset_keys()
+    def change_curr_menu(self, menu):
+        self.curr_menu = menu
 
     def reset_keys(self):
         # if we don't reset the keys, then it will interpret the keys as always being pressed down
