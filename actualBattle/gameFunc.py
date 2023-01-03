@@ -1,8 +1,6 @@
 import sys
-from ahk.window import Window
-from ahk import AHK
 import pygame
-from menu import *
+from Menus import mainMenus
 pygame.font.init()
 
 
@@ -25,9 +23,7 @@ class mainGame():
         self.WIDTH, self.HEIGHT = sizeTuple[0], sizeTuple[1]
 
         pygame.display.set_caption("TurnBased")
-        self.main_menu = MainMenu(self)
-        self.options = OptionsMenu(self)
-        self.credits = CreditsMenu(self)
+        self.main_menu = mainMenus.MainMenu(self)
         self.curr_menu = self.main_menu
 
     # Runs different things based on which event is detected; events include closing the game and pressing down certain buttons

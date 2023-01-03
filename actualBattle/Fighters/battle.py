@@ -1,5 +1,6 @@
 import copy
 import random
+from Menus import setupMenus
 # given a list of possible monsters, assemble
 # a battle troop that the player will face.
 
@@ -29,3 +30,24 @@ def assembleBattleTroop(monsterList, count):
             finalBattleTroop.append(randomEnemy)
         count -= 1
     return finalBattleTroop
+
+
+def levelUpCalculation(theProtagonist, experiencePointsGained):
+    # every level requires 25 more exp than the previous
+    levelCap = theProtagonist.getLevel() * 25
+    theProtagonist.adjustExperience(experiencePointsGained)
+    if (theProtagonist.getExperience() >= levelCap):
+        # leftOverExperience after leveling up
+        leftoverExperience = theProtagonist.getExperience() - levelCap
+        # reset experience after leveling up
+        theProtagonist.setExperience(0)
+        # add over the leftover experience
+        theProtagonist.adjustExperience(leftoverExperience)
+        theProtagonist.adjustLevel(1)
+        # actually level up
+        # bottom condtional statement just in case the leftOverExperience ended up resulting in another level up.
+        return True
+    elif (theProtagonist.getExperience() >= theProtagonist.getLevel() * 25):
+        pass
+    else:
+        return False

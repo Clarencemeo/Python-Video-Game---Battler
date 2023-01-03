@@ -1,7 +1,6 @@
 class Player:
     def __init__(self, ad, mdmg, pd, mdef, luck, speed, energy, currEnergy, health, currHealth, gold, experience, level, weapon, armor, skills, elementalResistances):
         self.energy = energy
-        # currEnergy was not in original saveData
         self.currEnergy = currEnergy
         self.health = health
         self.currHealth = currHealth
@@ -25,14 +24,10 @@ class Player:
         self.physicalDefense = int((pd + armor.physicalDefense) * 1.6)
         self.magicDefense = int((mdef + armor.magicDefense) * 1.6)
         # elemental resistance is mostly based on the armor
-        self.elementalResistances = {'Fire': 0+armor.elementalResistances['Fire'],
-                                     'Water': 0+armor.elementalResistances['Water'],
-                                     'Electric': 0+armor.elementalResistances['Electric'],
-                                     'Ice': 0+armor.elementalResistances['Ice'],
-                                     'Dark': 0+armor.elementalResistances['Dark'],
-                                     'Light': 0+armor.elementalResistances['Light'],
-                                     'Strike': 0+armor.elementalResistances['Strike']
-                                     }
+        self.elementalResistances = elementalResistances
+
+    def setResistances(self, element, value):
+        self.elementalResistances[element] = value
 
     def adjustHealth(self, health):  # Health adjustments can be positive or negative
         self.currHealth += health

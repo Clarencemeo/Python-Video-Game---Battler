@@ -1,13 +1,11 @@
 from BattlePrep.abilities import *
 from BattlePrep.equipment import *
-
-# silverSword = Weapon("Silver Sword", 5, 1, 0, 0.03,
-#                     'Physical', "Single", "Assets/SilverSword.png")
+from Menus import menu
 
 
 class Skills:
     def __init__(self):
-        # Below are the initializations for the skills, weapons, and armor.
+        # Below are the initializations for the skills, weapons, enemies and armor.
         # Skill(Name, description, base dmg, var dmg, scope, energy cost, element, skillType, color)
 
         # Elemental Magic Skills
@@ -15,6 +13,8 @@ class Skills:
                                    8, 'Fire', "Magical", (245, 72, 66))
         self.water = Skill("Torrent", "Deals low magical water damage to one enemy.", 7.5, 2.5, "Single",
                            8, 'Water', "Magical", (0, 92, 250))
+        self.tsunami = Skill("Tsunami", "Deals medium magical water damage to one enemy.", 24, 5, "Single",
+                             14, 'Water', "Magical", (0, 92, 250))
         self.darkStrike = Skill("Dark",  "Deals low magical dark damage to one enemy.", 7.5, 2.5, "Single",
                                 8, 'Dark', "Magical", (97, 88, 87))
         self.freezeSpell = Skill("Ice",  "Deals low magical ice damage to one enemy.", 7.5, 2.5,
@@ -30,12 +30,22 @@ class Skills:
         # Physical Skills
         self.basicAttack = Skill("Attack",  "Attack an enemy. Effects differ based on weapon.", 6, 1, "Single", 0,
                                  "Strike", "Physical", (0, 0, 0))
-        self.bluntStrike = Skill("Skewer",  "Deal moderate physical strike damage to one enemy.", 16, 5, "Single", 15,
+        self.bluntStrike = Skill("Skewer",  "Deal moderate physical strike damage to one enemy.", 16, 3, "Single", 15,
                                  "Strike", "Physical", (0, 0, 0))
         self.electricSlash = Skill("ESlash",  "Deal low physical electric damage to one enemy.", 9, 3, "Single", 10,
                                    "Electric", "Physical", (235, 231, 26))
         self.iceSlash = Skill("Popsicle",  "Deal low physical ice damage to one enemy.", 9, 3, "Single", 10,
                               "Ice", "Physical", (17, 250, 246))
+        self.magSword = Skill("Mystic",  "Deal moderate magical dark damage to an enemy; this scales with your attack.", 16, 3, "Single", 10,
+                              "Dark", "Magical", (204, 12, 175))
+        self.fireArrow = Skill("Blazer",  "Deal low physical fire damage to one enemy.", 9, 3, "Single", 10,
+                               "Fire", "Physical", (245, 72, 66))
+        self.oneHit = Skill("1Hit",  "30 percent chance to kill an enemy; chance increases by 1 percent per luck.", 3, 1, "Single", 20,
+                            "Dark", "Magical", (176, 176, 90))
+        self.gamble = Skill("Gamble",  "Deal moderate physical damage to an enemy, but the element of this skill is random.", 16, 3, "Single", 10,
+                            "Strike", "Physical", (0, 0, 0))
+        self.bullseye = Skill("Bullseye",  "40 percent chance to kill an enemy; chance increases by 1 percent per luck.", 4, 1, "Single", 30,
+                              "Light", "Magical", (176, 176, 90))
         # Physical Skills END
 
         # Buff & Healing Skills
@@ -46,6 +56,8 @@ class Skills:
                           "Magical", "Healing", (0, 0, 0))
         self.healra = Skill("Healra",  "Heal self for 125 health", 125, 0, "Single", 45,
                             "Magical", "Healing", (0, 0, 0))
+        self.focus = Skill("Focus",  "Sacrifices 10 percent of your current health to recover 30 percent of your max mana.", 10, 0, "Single", 0,
+                           "Conversion", "Conversion", (235, 231, 26))
         # Buff & Healing Skills END
 
         # Unique Monster Skills
@@ -131,10 +143,10 @@ class Classes(Skills, Equips):
                                                               self.freezeSpell, self.water, self.zap], self.baseElementalResist)
         self.warrior = Player(8, 3, 10, 7, 5, 9, 130, 130, 350, 350, 500, 0,
                               1, self.silverSword, self.plating, [self.bluntStrike,
-                                                                  self.electricSlash, self.charge, self.heal], self.baseElementalResist)
+                                                                  self.electricSlash, self.charge, self.magSword], self.baseElementalResist)
         self.archer = Player(7, 5, 7, 7, 10, 14, 150, 150, 280, 280, 500, 0,
-                             1, self.bow, self.plating, [self.heal,
-                                                         self.fireballSpell, self.darkStrike, self.freezeSpell], self.baseElementalResist)
+                             1, self.bow, self.plating, [self.oneHit,
+                                                         self.fireArrow, self.gamble, self.focus], self.baseElementalResist)
         self.cleric = Player(6, 9, 5, 10, 5, 7, 200, 200, 350, 350, 500, 0,
                              1, self.silverSword, self.plating, [self.heal,
                                                                  self.holy, self.darkStrike, self.cleanse], self.baseElementalResist)

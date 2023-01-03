@@ -2,7 +2,6 @@ import random
 from random import randint
 from Fighters.player import Player
 from Fighters.enemy import Enemy
-import time
 
 
 class Skill:
@@ -66,13 +65,27 @@ class Skill:
                             self.baseDmg+self.variationDmg)
         if (isinstance(user, Player)):
             user.adjustNegativeEnergy(self.energyCost)
-        if self.skillType == "Buff":
+        if self.skillType == "Conversion":
+            if self.getName() == "Focus":
+                healthChange = int(-1*(user.currHealth * 0.10))
+                manaChange = int(1*(user.energy * 0.30))
+                user.adjustHealth(healthChange)
+                user.adjustEnergy(manaChange)
+                return user.getName() + " used " + self.getName() + " ! Gained " + str(manaChange) + " mana and lost " + str(healthChange) + " health!"
+        elif self.skillType == "Buff":
             user.setBuffs("Charged")
             return (user.getName() + " used " + self.getName() + " and gained the " + self.getElement() + " buff!")
-        if self.skillType == "Cleanse":
+        elif self.getName() == "1Hit" or self.getName() == "Bullseye":
+            self.randDecimal = random.random() + (user.luck/100)
+            if self.randDecimal >= (1-(self.getBase()/100)):
+                target.adjustHealth(-300)
+                return (user.getName() + " used " + self.getName() + " and successfully dealt a killing blow!")
+            else:
+                return (user.getName() + " used " + self.getName() + " but missed!")
+        elif self.skillType == "Cleanse":
             user.resetState()
             return (user.getName() + " used " + self.getName() + " and removed their stat ailments!")
-        if self.skillType == "Drain":
+        elif self.skillType == "Drain":
             if self.getName() == "Draining Bite":
                 target.adjustEnergy(-1 * rawDamage)
                 return(user.getName() + " used " + self.getName() + " and stole " + str(rawDamage) + " mana from you!")
@@ -86,6 +99,12 @@ class Skill:
                 return (user.getName() + " attempted to use " + self.getName() + " but it was deflected by the doctor's preventative cure!")
             target.setState((self.getElement()), self.getBase())
             return(user.getName() + " used " + self.getName() + " and inflicted " + self.getElement() + " on " + target.getName() + " for " + str(self.getBase()) + " turns!")
+
+        elif self.getName() == "Mystic":
+            overallDamage = int((rawDamage + user.attackDamage -
+                                 target.magicDefense) * target.elementalResistances[self.element])
+            if "Charged" == user.getBuffs():
+                overallDamage = overallDamage*2.5
         elif self.skillType == 'Physical':
             overallDamage = int((rawDamage + user.attackDamage -
                                  target.physicalDefense) * target.elementalResistances[self.element])
@@ -105,9 +124,12 @@ class Skill:
             overallDamage *= 1.5
             flagCrit = True
         # the two below conditional statements are used to calculate elemental resistances
-        if (target.elementalResistances[self.element] <= 0.5):
+        if (self.getName() == "Gamble"):
+            self.adjustElement(random.choice(
+                ["Fire", "Ice", "Dark", "Light", "Water", "Strike", "Electric"]))
+        if (target.elementalResistances[self.element] <= 0.9):
             flagStrength = True
-        if (target.elementalResistances[self.element] >= 1.5):
+        if (target.elementalResistances[self.element] >= 1.1):
             flagWeakness = True
         # below conditional statement is to make sure the damage does not go negative before the next line
         if (overallDamage < 0):
@@ -119,19 +141,19 @@ class Skill:
 
         if (isinstance(user, Player)):
             if (flagCrit and flagWeakness):
-                printer = ("Used " + self.getName() + ". CRITICAL and weakpoint! You dealt " + str(overallDamage) +
+                printer = ("Used " + self.getName() + ". CRITICAL and weakpoint! You dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to the enemy " + target.name + "!")
             if (flagCrit):
-                printer = ("Used " + self.getName() + ". CRITICAL! You dealt " + str(overallDamage) +
+                printer = ("Used " + self.getName() + ". CRITICAL! You dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to the enemy " + target.name + "!")
             elif (flagWeakness):
-                printer = ("Used " + self.getName() + ". Enemy is weak to " + self.element + "! You dealt " + str(overallDamage) +
+                printer = ("Used " + self.getName() + ". Enemy is weak to " + self.element + "! You dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to the enemy " + target.name + "!")
             elif (flagStrength):
-                printer = ("Used " + self.getName() + ". Enemy resists " + self.element + "! You dealt " + str(overallDamage) +
+                printer = ("Used " + self.getName() + ". Enemy resists " + self.element + "! You dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to the enemy " + target.name + "!")
             else:
-                printer = ("Used " + self.getName() + ". You dealt " + str(overallDamage) +
+                printer = ("Used " + self.getName() + ". You dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to the enemy " + target.name + "!")
             # time.sleep in order to give the user time to read the output
             if "Charged" == user.getBuffs():
@@ -139,52 +161,18 @@ class Skill:
                 return "Consumed Charge! " + printer
         if (isinstance(user, Enemy)):
             if (flagCrit and flagWeakness):
-                printer = (user.getName() + " used " + self.getName() + ". CRITICAL and weakpoint! It dealt " + str(overallDamage) +
+                printer = (user.getName() + " used " + self.getName() + ". CRITICAL and weakpoint! It dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to you!")
             if (flagCrit):
-                printer = (user.getName() + " used " + self.getName() + ". CRITICAL! It dealt " + str(overallDamage) +
+                printer = (user.getName() + " used " + self.getName() + ". CRITICAL! It dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to you!")
             elif (flagWeakness):
-                printer = (user.getName() + " used " + self.getName() + ". It hit your weakness! It dealt " + str(overallDamage) +
+                printer = (user.getName() + " used " + self.getName() + ". It hit your weakness! It dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to you!")
             elif (flagStrength):
-                printer = (user.getName() + " used " + self.getName() + ". You resist " + self.element + "! It dealt " + str(overallDamage) +
+                printer = (user.getName() + " used " + self.getName() + ". You resist " + self.element + "! It dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to you!")
             else:
-                printer = (user.getName() + " used " + self.getName() + ". It dealt " + str(overallDamage) +
+                printer = (user.getName() + " used " + self.getName() + ". It dealt " + str(overallDamage) + " " + self.getElement() +
                            " damage to you!")
         return printer
-
-
-class BuffDebuffSkill:
-    def __init__(self, name, energy, stat, adjustment, skillType, color):
-        self.name = name
-        self.color = color
-        self.energyCost = energy
-        self.stat = stat  # tracks which stat in particular will be adjusted
-        self.skillType = skillType  # tracks if the stat is a buff or debuff
-        if (self.skillType == "Buff"):
-            self.adjustment = adjustment
-        else:
-            self.adjustment = adjustment * -1
-
-    def executeSkill(self, target, user):
-        if (self.stat == "Attack Damage"):
-            target.adjustattackDamage(self.adjustment)
-        if (self.stat == "Magic Damage"):
-            target.adjustmagicDamage(self.adjustment)
-
-    def getName(self):
-        return self.name
-
-    def getColor(self):
-        return self.color
-
-    def getEnergy(self):
-        return self.energyCost
-
-    def getType(self):
-        return self.skillType
-
-    def getStat(self):
-        return self.stat
