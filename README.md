@@ -1,3 +1,13 @@
+# Pictures
+![image](https://user-images.githubusercontent.com/77476725/210347185-2ab45491-de83-4faa-b544-8401369e5ea6.png)
+![image](https://user-images.githubusercontent.com/77476725/210347212-42e711df-11c6-4b93-8832-f88f552271c7.png)
+![image](https://user-images.githubusercontent.com/77476725/210347383-ce9dc6e2-8b13-40d0-8bb9-651f4ca81b41.png)
+![image](https://user-images.githubusercontent.com/77476725/210347540-1ae782b4-ba62-44e0-98a2-9dd5217a8bf5.png)
+![image](https://user-images.githubusercontent.com/77476725/210347726-1642384d-814c-4c8e-ac32-9395f7e4bb66.png)
+![image](https://user-images.githubusercontent.com/77476725/210347928-4448a455-87cc-4bd9-87a4-1b405ef3d838.png)
+![image](https://user-images.githubusercontent.com/77476725/210348598-1cdf649d-299f-41d3-a5d3-04df46145f56.png)
+
+
 ### Features
 
 - Fully functional battle system with level-up
