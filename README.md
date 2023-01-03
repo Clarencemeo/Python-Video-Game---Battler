@@ -12,11 +12,12 @@
 - Randomly generated enemy armies
   - Each enemy has a unique skillset and weaknesses & strengths
 - Weapons, armor, and skills to spice up the gameplay
-- Diverse Skills to use in battle against enemies 
+- Diverse Skills to use in battle
   - Healing Skills that can heal your player or cleanse status ailments
   - Buffing Skills that can give unique buffs during battle, such as the Charge skill which boosts next attack by 2.5. 
   - Unique Skills, such as Gamble which has a random element or 1hit which has a chance to insta-kill based on luck.
   - Elemental Skills which can exploit enemy weaknesses!
+  - Ailment Skills, such as Blind which makes the player unable to see the health of enemies and where each path leads in their exploration.
 - Multiple gameplay elements, such as Luck, Speed, Energy, Status Ailments (Blindness, Poison, Silence) and Elemental Resistances
 in order to add more depth
 - Pictures coming soon
