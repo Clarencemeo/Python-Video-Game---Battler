@@ -124,6 +124,9 @@ class Player:
     def setExperience(self, value):
         self.experience = value
 
+    def adjustSkills(self, index, skill):
+        self.skillList[index] = skill
+
     def printElementalResistances(self):
         for y in self.elementalResistances:
             print(y, ':', self.elementalResistances[y])
@@ -148,6 +151,12 @@ class Player:
 
     def getCurrHealth(self):
         return self.currHealth
+
+    def getWeapon(self):
+        return self.weapon
+
+    def getArmor(self):
+        return self.armor
 
     def getEnergy(self):
         return self.energy

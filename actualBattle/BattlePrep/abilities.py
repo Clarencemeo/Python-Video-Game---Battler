@@ -97,7 +97,7 @@ class Skill:
             if "Charged" == user.getBuffs():
                 overallDamage = overallDamage*2.5
         elif self.skillType == 'Healing':
-            healingVal = 50
+            healingVal = self.getBase()
             target.adjustHealth(healingVal)
             return(user.getName() + " healed " + target.getName() + " for " + str(healingVal) + " health!")
         # below conditional statement is used to calculate if the hit is a critical strike

@@ -35,6 +35,9 @@ class Weapon:
     def getImage(self):
         return self.image
 
+    def setElement(self, element):
+        self.element = element
+
     def formatDictionarySlot(self):
         return {"Name": self.name, "Speed": self.speed, "Attack Damage": self.attackDamage, "Magic Damage": self.magicDamage, "Critical Rate": self.criticalRate, "Element": self.element, "Scope": self.scope, "Image": self.image}
 
@@ -51,3 +54,6 @@ class Armor:
 
     def getName(self):
         return self.name
+
+    def setResistances(self, element, value):
+        self.elementalResistances[element] = value

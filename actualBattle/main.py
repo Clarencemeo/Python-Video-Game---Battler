@@ -1,10 +1,9 @@
 from gameFunc import mainGame
-import initializations.globalVariables
+from initializations.skillsEquipment import Skills
 import initializations.skillsEquipment
-globalVarPath = initializations.globalVariables
-globalVarPath.init()
 skillsEquipmentPath = initializations.skillsEquipment
-skillsEquipmentPath. init()
+#skillsEquipmentPath. init()
+
 g = mainGame()
 
 while g.running:

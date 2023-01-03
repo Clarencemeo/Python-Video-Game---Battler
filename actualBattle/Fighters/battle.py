@@ -1,8 +1,5 @@
 import copy
-import time
 import random
-import initializations.globalVariables
-globalVarPath = initializations.globalVariables
 # given a list of possible monsters, assemble
 # a battle troop that the player will face.
 

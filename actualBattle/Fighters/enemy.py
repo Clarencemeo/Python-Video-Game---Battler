@@ -3,12 +3,11 @@ from random import randint
 
 
 class Enemy:
-    def __init__(self, health, skillDictionary, dropsDictionary, name, goldReward, experienceReward, speed, attackDamage, magicDamage,
+    def __init__(self, health, skillDictionary, name, goldReward, experienceReward, speed, attackDamage, magicDamage,
                  physicalDefense, magicDefense, elementalResistances, critRate, originalName):
         self.health = health
         self.maxHealth = health
         self.skillDictionary = skillDictionary
-        self.dropsDictionary = dropsDictionary
         self.name = name
         self.energy = 100
         self.goldReward = goldReward

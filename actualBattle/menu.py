@@ -1,6 +1,5 @@
 from initializations import skillsEquipment
-from initializations import globalVariables
-import Fighters.battle
+from initializations.skillsEquipment import *
 from Fighters.battle import *
 from Fighters.enemy import Enemy
 import pygame
@@ -13,6 +12,8 @@ menuHoverSound = pygame.mixer.Sound(os.path.join('Assets/menuHover.wav'))
 menuBackSound = pygame.mixer.Sound(os.path.join('Assets/menuBack.wav'))
 menuErrorSound = pygame.mixer.Sound(os.path.join('Assets/menu_error.wav'))
 victorySound = pygame.mixer.Sound(os.path.join('Assets/battleVictory.wav'))
+global protagonist
+protagonist = ""
 
 
 class Menu():
@@ -20,8 +21,15 @@ class Menu():
         self.game = game
         self.mid_w, self.mid_h = self.game.WIDTH/2, self.game.HEIGHT/2
         self.run_display = True
-        self.protag = globalVariables.protagonist
-        self.monsters = globalVariables.monsterList1
+        self.skills = Skills()
+        self.enemies = Enemies()
+        self.equips = Equips()
+        self.classes = Classes()
+        #self.protag = globalVariables.protagonist
+        self.protag = protagonist
+        #self.monsters = globalVariables.monsterList1
+        self.monsters = {
+            "Slime": self.enemies.slimeEnemy, "Bat": self.enemies.batEnemy, "Ghost": self.enemies.ghostEnemy, "Spider": self.enemies.spiderEnemy, "Unicorn": self.enemies.unicornEnemy, "Wolf": self.enemies.wolfEnemy, "Skeleton": self.enemies.skeletonEnemy}
         # rectangle for cursor is 15 by 15 in height and width
         self.cursor_rect = pygame.Rect(0, 0, 15, 15)
         self.offset = - 65  # want our cursor to be left of the menu
@@ -235,13 +243,18 @@ class findSkillMenu(Menu):
 
     def display_menu(self):
         self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w-220 + self.offset, self.mid_h+60)
+        selectableSkills = [self.skills.charge,
+                            self.skills.cleanse, self.skills.iceSlash, self.skills.telekinesis, self.skills.healra]
+        self.randSkill = random.choice(selectableSkills)
+        self.ignore = False
         while self.run_display:
             self.game.check_events()
             self.check_input()
             incrementer = 0
-            selectableSkills = [skillsEquipment.fireballSpell]
+            self.game.display.blit(self.backMenu, (0, 0))
             for each_skill in self.protag.getSkills():
-                self.game.display.blit(self.backMenu, (0, 0))
                 self.game.draw_text(self.protag.getSkills()[self.skillState].getDescription(), 40, self.mid_w,
                                     self.mid_h+10, self.game.BLACK)
                 self.game.draw_text(each_skill.getName(), 40, self.mid_w-220+incrementer,
@@ -251,8 +264,18 @@ class findSkillMenu(Menu):
                 self.game.draw_text("Type: " + each_skill.getSkillType(), 25, self.mid_w-220+incrementer,
                                     self.mid_h+120, self.game.BLACK)
                 incrementer += 170
-            self.game.draw_text("Found Skill: " + selectableSkills[0].getName(), 50, self.mid_w,
-                                self.mid_h+-50, self.game.BLACK)
+            self.game.draw_text(self.randSkill.getName(), 50, self.mid_w,
+                                self.mid_h-300, self.randSkill.getColor())
+            self.game.draw_text("Mana: " + str(self.randSkill.getEnergy()), 35, self.mid_w,
+                                self.mid_h-240, self.game.BLACK)
+            self.game.draw_text("Type: " + self.randSkill.getSkillType(), 35, self.mid_w,
+                                self.mid_h-180, self.game.BLACK)
+            self.game.draw_text(self.randSkill.getDescription(), 35, self.mid_w,
+                                self.mid_h-120, self.game.WHITE)
+            self.game.draw_text("You found a skill! Choose a skill to replace.", 60, self.mid_w,
+                                self.mid_h-450, self.game.WHITE)
+            self.game.draw_text("Ignore", 60, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
             self.draw_cursor()
             self.blit_screen(self.game.display)
 
@@ -265,6 +288,27 @@ class findSkillMenu(Menu):
             menuHoverSound.play()
             self.skillState = self.cursor_mult_options(
                 self.skillState, self.mid_w-220+self.offset, self.mid_h+60, 170, 0, 4, True)
+        if self.game.DOWN_KEY:
+            menuHoverSound.play()
+            self.cursor_rect.midtop = (
+                self.mid_w + self.offset-50, self.mid_h+400)
+            self.skillState = 0
+            self.ignore = True
+        if self.game.UP_KEY:
+            menuHoverSound.play()
+            self.cursor_rect.midtop = (
+                self.mid_w-220 + self.offset, self.mid_h+60)
+            self.skillState = 0
+            self.ignore = False
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            if self.ignore:
+                self.game.curr_menu = directionsMenu(self.game)
+                self.run_display = False
+            else:
+                self.protag.adjustSkills(self.skillState, self.randSkill)
+                self.game.curr_menu = directionsMenu(self.game)
+                self.run_display = False
 
 
 class directionsMenu(Menu):
@@ -272,26 +316,29 @@ class directionsMenu(Menu):
         Menu.__init__(self, game)
         # tuples containing message descriptor and the menu it connects to
         fieldMonsters = [self.deepCopyEnemy("Slime"), self.deepCopyEnemy(
-            "Unicorn"), self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Bat"), self.deepCopyEnemy("Wolf")]
-        cemetery = ("There is a cemetery this way. You can see ghosts and bats flying around.", BattleMenu(
-            self.game, [self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Bat")], 2))
+            "Unicorn"), self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Spider"), self.deepCopyEnemy("Bat"), self.deepCopyEnemy("Wolf"), self.deepCopyEnemy("Skeleton")]
+        cemetery = ("There is a cemetery this way. You can see ghosts and skeletons around.", BattleMenu(
+            self.game, [self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Skeleton")], 2))
         cavern = ("There is a cavern this way. You can see slimes and spiders walking through the cave.", BattleMenu(
-            self.game, [self.deepCopyEnemy("Slime"), self.deepCopyEnemy("Slime")], 2))
+            self.game, [self.deepCopyEnemy("Slime"), self.deepCopyEnemy("Spider")], 2))
         waterfall = ("There is a waterfall this way. There are unicorns and slimes.", BattleMenu(
             self.game, [self.deepCopyEnemy("Slime"), self.deepCopyEnemy("Unicorn")], 2))
         openField = ("There is an open field with a variety of monsters roaming.", BattleMenu(
             self.game, fieldMonsters, 2))
+        den = ("There is a den this way. There are wolves and bats.", BattleMenu(
+            self.game, [self.deepCopyEnemy("Wolf"), self.deepCopyEnemy("Bat")], 2))
         campsite = (
             "There is a campsite this way. You could heal your health or mana here.", campsiteMenu(self.game))
         skills = (
             "There seems to be a skill you can pick up this way.", findSkillMenu(self.game))
         doctor = (
             "There is a doctor this way. She could help you deal with ailments.", doctorMenu(self.game))
+        blackSmith = (
+            "There is a blacksmith this way. He could modify your equipment.", smithMenu(self.game))
         swamp = (
             "There is a swamp this way. It could be poisonous or healing. Influenced by luck stat.", swampMenu(self.game))
-        # possibleEvents = [cemetery, cavern, campsite,
-        #                  waterfall, doctor, swamp, openField]
-        possibleEvents = [skills, campsite]
+        possibleEvents = [cemetery, cavern, campsite,
+                          waterfall, doctor, swamp, openField, skills, blackSmith, den]
         # if self.protag.getLevel() >= 4:
         #    possibleEvents.append()
         leftEvent = random.choice(possibleEvents)
@@ -354,6 +401,8 @@ class swampMenu(Menu):
             self.check_input()
             self.game.display.blit(self.backMenu, (0, 0))
             self.draw_info()
+            self.game.draw_text("Swamp", 60, self.mid_w,
+                                self.mid_h-450, self.game.WHITE)
             if self.randDecimal <= 0.5:
                 if flag:
                     self.game.draw_text("The swamp ended up being poisonous but the doctor's preventative cure deflected it!", 50, self.mid_w,
@@ -380,6 +429,51 @@ class swampMenu(Menu):
             self.run_display = False
 
 
+class smithMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        self.state = 0
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w+self.offset-300, self.mid_h+300)
+        elements = ["Fire", "Water", "Ice",
+                    "Electric", "Holy", "Dark", "Strike"]
+        self.randChoice1 = random.choice(elements)
+        self.randChoice2 = random.choice(elements)
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.draw_info()
+            self.game.draw_text("Blacksmith", 60, self.mid_w,
+                                self.mid_h-450, self.game.WHITE)
+            self.game.draw_text("You run into a blacksmith who can alter equipment.", 50, self.mid_w,
+                                self.mid_h+50, self.game.WHITE)
+            self.game.draw_text("Infusion (Give your weapon " + self.randChoice1 + " infusion.)", 40, self.mid_w,
+                                self.mid_h+300, self.game.WHITE)
+            self.game.draw_text("Fortify (Give your armor " + self.randChoice2 + " resistance.)", 40, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.DOWN_KEY or self.game.UP_KEY:
+            menuHoverSound.play()
+            self.state = self.cursor_two_options(
+                self.cursor_rect, self.state, 0, 1, self.mid_w+self.offset-300, self.mid_w+self.offset-300, self.mid_h+300, self.mid_h + 400)
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            if self.state == 0:
+                self.protag.getWeapon().setElement(self.randChoice1)
+                self.skills.basicAttack.adjustElement(self.randChoice1)
+            else:
+                self.protag.getArmor().setResistances(self.randChoice2, 0.5)
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
+
+
 class doctorMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
@@ -394,6 +488,8 @@ class doctorMenu(Menu):
             self.check_input()
             self.game.display.blit(self.backMenu, (0, 0))
             self.draw_info()
+            self.game.draw_text("Doctor", 60, self.mid_w,
+                                self.mid_h-450, self.game.WHITE)
             self.game.draw_text("You run into a doctor who specializes in status ailments!", 50, self.mid_w,
                                 self.mid_h+50, self.game.WHITE)
             self.game.draw_text("Instant Cure (Heal all current status ailments)", 40, self.mid_w,
@@ -432,6 +528,8 @@ class campsiteMenu(Menu):
             self.check_input()
             self.game.display.blit(self.backMenu, (0, 0))
             self.draw_info()
+            self.game.draw_text("Campsite", 60, self.mid_w,
+                                self.mid_h-450, self.game.WHITE)
             self.game.draw_text("Eat Food (Restores 250 Health)", 40, self.mid_w,
                                 self.mid_h+300, self.game.WHITE)
             self.game.draw_text("Sleep (Restores 100 Mana)", 40, self.mid_w,
@@ -490,7 +588,7 @@ class LevelUpMenu(Menu):
             self.displayStatInfo()
             self.game.draw_text("LEVEL UP!", 60, self.mid_w,
                                 self.mid_h-450, self.game.WHITE)
-            self.game.draw_text("You earned " + str(self.expGained) + " EXP and leveled up to level " + str(globalVariables.protagonist.getLevel()) + "! Choose which stats to level.", 40, self.mid_w,
+            self.game.draw_text("You earned " + str(self.expGained) + " EXP and leveled up to level " + str(self.protag.getLevel()) + "! Choose which stats to level.", 40, self.mid_w,
                                 self.mid_h-370, self.game.BLACK)
             self.game.draw_text("Strength: " + str(self.protag.getAttackDamage()), 40, self.mid_w-550,
                                 self.mid_h-250, self.game.WHITE)
@@ -636,7 +734,6 @@ class gameOverMenu(Menu):
             menuConfirmSound.play()
             self.restart = MainMenu(self.game)
             self.game.curr_menu = self.restart
-            initializations.skillsEquipment.init()  # reset protag stats
             self.run_display = False
 
 
@@ -644,7 +741,7 @@ class classMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self, game)
         self.classState = 0
-        self.classList = initializations.globalVariables.classList
+        self.classList = self.classes.listClasses
 
     def display_menu(self):
         self.run_display = True
@@ -709,7 +806,9 @@ class classMenu(Menu):
                 self.classState, cursorXpos, self.mid_h-(250), 0, 100, 4, True)
         if self.game.START_KEY:
             menuConfirmSound.play()
-            initializations.globalVariables.protagonist = self.classList[self.classState]
+            global protagonist
+            protagonist = self.classList[self.classState]
+            #self.protag = self.classList[self.classState]
             # self.game.curr_menu = BattleMenu(
             #    self.game, [self.monsters["Ghost"], self.monsters["Slime"]], 2)
             self.game.curr_menu = directionsMenu(self.game)
@@ -773,7 +872,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
     def winBattle(self):
         if len(self.battleTroop) == 0:
             # if level up, go to levelup menu, else go to victoryMenu
-            if self.levelUpCalculation(globalVariables.protagonist, self.expGained):
+            if self.levelUpCalculation(self.protag, self.expGained):
                 self.levelUp = LevelUpMenu(self.game, self.expGained)
                 self.game.curr_menu = self.levelUp
             else:
@@ -1034,7 +1133,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
     def check_input(self):
         # this is when the player uses regular attack
         if self.cursor_on_enemies and self.player_turn:
-            self.attack(skillsEquipment.basicAttack)
+            self.attack(self.skills.basicAttack)
         # this is to manage the cursor when the skill menu is open.
         elif self.use_skill and self.player_turn:
             self.attack(self.protag.getSkills()[self.skillState])
