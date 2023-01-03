@@ -26,7 +26,6 @@ class mainGame():
         pygame.display.set_caption("TurnBased")
         self.main_menu = MainMenu(self)
         self.options = OptionsMenu(self)
-        self.inventory = InventoryMenu(self)
         self.credits = CreditsMenu(self)
         self.curr_menu = self.main_menu
 

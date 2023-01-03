@@ -31,6 +31,9 @@ class Skill:
     def getName(self):
         return self.name
 
+    def getBase(self):
+        return self.baseDmg
+
     def getScope(self):
         return self.scope
 
@@ -58,28 +61,53 @@ class Skill:
         flagCrit = False
         flagWeakness = False
         flagStrength = False
-        flagDefeated = False
         # establish lower and upper bounds of damage
         rawDamage = randint(self.baseDmg-self.variationDmg,
                             self.baseDmg+self.variationDmg)
-        user.adjustNegativeEnergy(self.energyCost)
-        if self.skillType == 'Physical':
-            overallDamage = rawDamage + user.attackDamage - \
-                target.physicalDefense - \
-                target.elementalResistances[self.element]
+        if (isinstance(user, Player)):
+            user.adjustNegativeEnergy(self.energyCost)
+        if self.skillType == "Buff":
+            user.setBuffs("Charged")
+            return (user.getName() + " used " + self.getName() + " and gained the " + self.getElement() + " buff!")
+        if self.skillType == "Cleanse":
+            user.resetState()
+            return (user.getName() + " used " + self.getName() + " and removed their stat ailments!")
+        if self.skillType == "Drain":
+            if self.getName() == "Draining Bite":
+                target.adjustEnergy(-1 * rawDamage)
+                return(user.getName() + " used " + self.getName() + " and stole " + str(rawDamage) + " mana from you!")
+            else:
+                target.adjustHealth(-1 * rawDamage)
+                user.adjustHealth(1 * rawDamage)
+                return(user.getName() + " used " + self.getName() + " and stole " + str(rawDamage) + " health from you!")
+        elif self.skillType == "Ailment":
+            if target.getCure() == True:
+                target.setCure(False)
+                return (user.getName() + " attempted to use " + self.getName() + " but it was deflected by the doctor's preventative cure!")
+            target.setState((self.getElement()), self.getBase())
+            return(user.getName() + " used " + self.getName() + " and inflicted " + self.getElement() + " on " + target.getName() + " for " + str(self.getBase()) + " turns!")
+        elif self.skillType == 'Physical':
+            overallDamage = int((rawDamage + user.attackDamage -
+                                 target.physicalDefense) * target.elementalResistances[self.element])
+            if "Charged" == user.getBuffs():
+                overallDamage = overallDamage*2.5
         elif self.skillType == 'Magical':
-            overallDamage = rawDamage + user.magicDamage - \
-                target.magicDefense - \
-                target.elementalResistances[self.element]
-        print(overallDamage)
+            overallDamage = int((rawDamage + user.magicDamage -
+                                 target.magicDefense) * target.elementalResistances[self.element])
+            if "Charged" == user.getBuffs():
+                overallDamage = overallDamage*2.5
+        elif self.skillType == 'Healing':
+            healingVal = 50
+            target.adjustHealth(healingVal)
+            return(user.getName() + " healed " + target.getName() + " for " + str(healingVal) + " health!")
         # below conditional statement is used to calculate if the hit is a critical strike
         if (random.uniform(0, 1) <= user.criticalRate):
             overallDamage *= 1.5
             flagCrit = True
         # the two below conditional statements are used to calculate elemental resistances
-        if (target.elementalResistances[self.element] > 5):
+        if (target.elementalResistances[self.element] <= 0.5):
             flagStrength = True
-        if (target.elementalResistances[self.element] < 0):
+        if (target.elementalResistances[self.element] >= 1.5):
             flagWeakness = True
         # below conditional statement is to make sure the damage does not go negative before the next line
         if (overallDamage < 0):
@@ -90,6 +118,9 @@ class Skill:
         # the two below conditional statements print a statement based on if the user of the skill was the player or the enemy
 
         if (isinstance(user, Player)):
+            if (flagCrit and flagWeakness):
+                printer = ("Used " + self.getName() + ". CRITICAL and weakpoint! You dealt " + str(overallDamage) +
+                           " damage to the enemy " + target.name + "!")
             if (flagCrit):
                 printer = ("Used " + self.getName() + ". CRITICAL! You dealt " + str(overallDamage) +
                            " damage to the enemy " + target.name + "!")
@@ -103,9 +134,25 @@ class Skill:
                 printer = ("Used " + self.getName() + ". You dealt " + str(overallDamage) +
                            " damage to the enemy " + target.name + "!")
             # time.sleep in order to give the user time to read the output
+            if "Charged" == user.getBuffs():
+                user.resetBuffs()
+                return "Consumed Charge! " + printer
         if (isinstance(user, Enemy)):
-            printer = (user.getName() + " dealt " +
-                       str(overallDamage) + " damage to you with " + self.getName() + "!")
+            if (flagCrit and flagWeakness):
+                printer = (user.getName() + " used " + self.getName() + ". CRITICAL and weakpoint! It dealt " + str(overallDamage) +
+                           " damage to you!")
+            if (flagCrit):
+                printer = (user.getName() + " used " + self.getName() + ". CRITICAL! It dealt " + str(overallDamage) +
+                           " damage to you!")
+            elif (flagWeakness):
+                printer = (user.getName() + " used " + self.getName() + ". It hit your weakness! It dealt " + str(overallDamage) +
+                           " damage to you!")
+            elif (flagStrength):
+                printer = (user.getName() + " used " + self.getName() + ". You resist " + self.element + "! It dealt " + str(overallDamage) +
+                           " damage to you!")
+            else:
+                printer = (user.getName() + " used " + self.getName() + ". It dealt " + str(overallDamage) +
+                           " damage to you!")
         return printer
 
 

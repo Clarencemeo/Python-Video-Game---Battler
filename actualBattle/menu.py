@@ -1,6 +1,3 @@
-import msvcrt
-import BattlePrep.inventorySlot
-from BattlePrep.inventorySlot import *
 from initializations import skillsEquipment
 from initializations import globalVariables
 import Fighters.battle
@@ -8,6 +5,8 @@ from Fighters.battle import *
 from Fighters.enemy import Enemy
 import pygame
 import os
+import random
+import copy
 pygame.mixer.init()
 menuConfirmSound = pygame.mixer.Sound(os.path.join('Assets/menuSelect.wav'))
 menuHoverSound = pygame.mixer.Sound(os.path.join('Assets/menuHover.wav'))
@@ -22,10 +21,11 @@ class Menu():
         self.mid_w, self.mid_h = self.game.WIDTH/2, self.game.HEIGHT/2
         self.run_display = True
         self.protag = globalVariables.protagonist
+        self.monsters = globalVariables.monsterList1
         # rectangle for cursor is 15 by 15 in height and width
         self.cursor_rect = pygame.Rect(0, 0, 15, 15)
         self.offset = - 65  # want our cursor to be left of the menu
-        self.forestMenu = pygame.transform.scale(pygame.image.load(
+        self.backMenu = pygame.transform.scale(pygame.image.load(
             os.path.join('Assets', 'mainMenu.jpg')), (self.game.WIDTH, self.game.HEIGHT))
 
     # so the self.cursor_rect.x and self.cursor_rect.y are the positions where we want to draw the cursor.
@@ -53,6 +53,37 @@ class Menu():
             self.cursor_rect.midtop = (x1, y1)
         return tracker
 
+    def cursor_mult_options(self, tracker, x, y, xAdjustment, yAdjustment, capacity, reverse):
+        tempClassState = tracker
+        print(tracker)
+        if tracker >= capacity-1 and not reverse:
+            tracker = self.cursor_two_options(
+                self.cursor_rect, tracker, tracker, 0, x+(tempClassState*xAdjustment), x+((0)*xAdjustment), y+(tempClassState*yAdjustment), y+((0)*yAdjustment))
+        elif tracker == 0 and reverse:
+            tracker = self.cursor_two_options(
+                self.cursor_rect, tracker, 0, capacity-1, x+(tempClassState*xAdjustment), x+((capacity-1)*xAdjustment), y+(tempClassState*yAdjustment), y+((capacity-1)*yAdjustment))
+        elif not reverse:
+            tracker = self.cursor_two_options(
+                self.cursor_rect, tracker, tracker, tracker+1, x+(tempClassState*xAdjustment), x+((tempClassState+1)*xAdjustment), y+(tempClassState*yAdjustment), y+((tempClassState+1)*yAdjustment))
+        elif reverse:
+            tracker = self.cursor_two_options(
+                self.cursor_rect, tracker, tracker, tracker-1, x+(tempClassState*xAdjustment), x+((tempClassState-1)*xAdjustment), y+(tempClassState*yAdjustment), y+((tempClassState-1)*yAdjustment))
+        return tracker
+
+    def draw_info(self):
+        self.game.draw_text("Health: " + str(self.protag.currHealth), 50, self.mid_w,
+                            self.mid_h-370, self.game.BLACK)
+        self.game.draw_text("Mana: " + str(self.protag.currEnergy), 50, self.mid_w,
+                            self.mid_h-270, self.game.BLACK)
+        self.game.draw_text("Level: " + str(self.protag.level), 50, self.mid_w,
+                            self.mid_h-170, self.game.BLACK)
+        if self.protag.getState()[0] != "":
+            self.game.draw_text("Ailments: " + self.protag.getState()[0], 50, self.mid_w,
+                                self.mid_h-70, (229, 255, 0))
+
+    def deepCopyEnemy(self, enemy):
+        return copy.deepcopy(self.monsters[enemy])
+
 
 class MainMenu(Menu):  # inherit values of base class menu
     def __init__(self, game):
@@ -69,7 +100,7 @@ class MainMenu(Menu):  # inherit values of base class menu
         while self.run_display:
             self.game.check_events()
             self.check_input()
-            self.game.display.blit(self.forestMenu, (0, 0))
+            self.game.display.blit(self.backMenu, (0, 0))
             self.game.draw_text(
                 'Turn Based Dungeon', 50, self.game.WIDTH/2, self.game.HEIGHT/2 - 20, self.game.BLACK)
             self.game.draw_text("Start Game", 20, self.startx,
@@ -118,11 +149,13 @@ class MainMenu(Menu):  # inherit values of base class menu
             menuConfirmSound.play()
             if self.state == "Start":
                 # self.game.playing = True
-                self.battle = BattleMenu(self.game)
-                self.game.curr_menu = self.battle
+                # self.battle = BattleMenu(self.game)
+                # self.game.curr_menu = self.battle
+                self.game.curr_menu = classMenu(self.game)
             elif self.state == "Options":
                 # self.game.curr_menu = self.game.options
-                self.game.curr_menu = self.game.inventory
+                # self.game.curr_menu = self.game.inventory
+                pass
             elif self.state == "Credits":
                 self.game.curr_menu = self.game.credits
             self.run_display = False  # tell the display_menu function to stop showing the main menu
@@ -195,6 +228,232 @@ class CreditsMenu(Menu):
             self.blit_screen(self.game.display)
 
 
+class findSkillMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        self.skillState = 0
+
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            incrementer = 0
+            selectableSkills = [skillsEquipment.fireballSpell]
+            for each_skill in self.protag.getSkills():
+                self.game.display.blit(self.backMenu, (0, 0))
+                self.game.draw_text(self.protag.getSkills()[self.skillState].getDescription(), 40, self.mid_w,
+                                    self.mid_h+10, self.game.BLACK)
+                self.game.draw_text(each_skill.getName(), 40, self.mid_w-220+incrementer,
+                                    self.mid_h+60, each_skill.getColor())
+                self.game.draw_text("Mana: " + str(each_skill.getEnergy()), 25, self.mid_w-220+incrementer,
+                                    self.mid_h+90, self.game.BLACK)
+                self.game.draw_text("Type: " + each_skill.getSkillType(), 25, self.mid_w-220+incrementer,
+                                    self.mid_h+120, self.game.BLACK)
+                incrementer += 170
+            self.game.draw_text("Found Skill: " + selectableSkills[0].getName(), 50, self.mid_w,
+                                self.mid_h+-50, self.game.BLACK)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.RIGHT_KEY:
+            menuHoverSound.play()
+            self.skillState = self.cursor_mult_options(
+                self.skillState, self.mid_w-220+self.offset, self.mid_h+60, 170, 0, 4, False)
+        if self.game.LEFT_KEY:
+            menuHoverSound.play()
+            self.skillState = self.cursor_mult_options(
+                self.skillState, self.mid_w-220+self.offset, self.mid_h+60, 170, 0, 4, True)
+
+
+class directionsMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        # tuples containing message descriptor and the menu it connects to
+        fieldMonsters = [self.deepCopyEnemy("Slime"), self.deepCopyEnemy(
+            "Unicorn"), self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Bat"), self.deepCopyEnemy("Wolf")]
+        cemetery = ("There is a cemetery this way. You can see ghosts and bats flying around.", BattleMenu(
+            self.game, [self.deepCopyEnemy("Ghost"), self.deepCopyEnemy("Bat")], 2))
+        cavern = ("There is a cavern this way. You can see slimes and spiders walking through the cave.", BattleMenu(
+            self.game, [self.deepCopyEnemy("Slime"), self.deepCopyEnemy("Slime")], 2))
+        waterfall = ("There is a waterfall this way. There are unicorns and slimes.", BattleMenu(
+            self.game, [self.deepCopyEnemy("Slime"), self.deepCopyEnemy("Unicorn")], 2))
+        openField = ("There is an open field with a variety of monsters roaming.", BattleMenu(
+            self.game, fieldMonsters, 2))
+        campsite = (
+            "There is a campsite this way. You could heal your health or mana here.", campsiteMenu(self.game))
+        skills = (
+            "There seems to be a skill you can pick up this way.", findSkillMenu(self.game))
+        doctor = (
+            "There is a doctor this way. She could help you deal with ailments.", doctorMenu(self.game))
+        swamp = (
+            "There is a swamp this way. It could be poisonous or healing. Influenced by luck stat.", swampMenu(self.game))
+        # possibleEvents = [cemetery, cavern, campsite,
+        #                  waterfall, doctor, swamp, openField]
+        possibleEvents = [skills, campsite]
+        # if self.protag.getLevel() >= 4:
+        #    possibleEvents.append()
+        leftEvent = random.choice(possibleEvents)
+        possibleEvents.remove(leftEvent)
+        rightEvent = random.choice(possibleEvents)
+        self.eventState = 0
+        self.events = [leftEvent, rightEvent]
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w-300+self.offset-40, self.mid_h+300)
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.game.draw_text("Which way will you go?", 70, self.mid_w,
+                                self.mid_h-470, self.game.BLACK)
+            self.draw_info()
+            self.game.draw_text("Left", 50, self.mid_w-300,
+                                self.mid_h+300, self.game.WHITE)
+            self.game.draw_text("Right", 50, self.mid_w+300,
+                                self.mid_h+300, self.game.WHITE)
+            if self.protag.getState()[0] == "Blind":
+                self.game.draw_text("You are blinded and cannot see where this path leads.", 50, self.mid_w,
+                                    self.mid_h+50, self.game.WHITE)
+            else:
+                self.game.draw_text(self.events[self.eventState][0], 50, self.mid_w,
+                                    self.mid_h+50, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.RIGHT_KEY or self.game.LEFT_KEY:
+            menuHoverSound.play()
+            self.eventState = self.cursor_two_options(self.cursor_rect, self.eventState, 0, 1,
+                                                      self.mid_w-300+self.offset-40, self.mid_w+300+self.offset-40, self.mid_h+300, self.mid_h+300)
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            self.game.curr_menu = self.events[self.eventState][1]
+            self.run_display = False
+
+
+class swampMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        self.state = 0
+        # luck increases chance of lucky event
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w + self.offset-50, self.mid_h+400)
+        self.randDecimal = random.random() + (self.protag.luck/100)
+        flag = False
+        if self.protag.getCure() == True:
+            flag = True
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.draw_info()
+            if self.randDecimal <= 0.5:
+                if flag:
+                    self.game.draw_text("The swamp ended up being poisonous but the doctor's preventative cure deflected it!", 50, self.mid_w,
+                                        self.mid_h+50, self.game.WHITE)
+                    self.protag.setCure(False)
+                else:
+                    self.game.draw_text("The swamp ended up being poisonous and you got poisoned.", 50, self.mid_w,
+                                        self.mid_h+50, self.game.WHITE)
+                    self.protag.setState("Poison", 4)
+            else:
+                self.game.draw_text("The swamp was miraculous and fully healed your health and status ailments!", 50, self.mid_w,
+                                    self.mid_h+50, self.game.WHITE)
+                self.protag.restoreAll()
+                self.protag.resetState()
+            self.game.draw_text("Continue", 60, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
+
+
+class doctorMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        self.state = 0
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w+self.offset-360, self.mid_h+300)
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.draw_info()
+            self.game.draw_text("You run into a doctor who specializes in status ailments!", 50, self.mid_w,
+                                self.mid_h+50, self.game.WHITE)
+            self.game.draw_text("Instant Cure (Heal all current status ailments)", 40, self.mid_w,
+                                self.mid_h+300, self.game.WHITE)
+            self.game.draw_text("Preventative Cure (Prevent the next status ailment)", 40, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.DOWN_KEY or self.game.UP_KEY:
+            menuHoverSound.play()
+            self.state = self.cursor_two_options(
+                self.cursor_rect, self.state, 0, 1, self.mid_w+self.offset-360, self.mid_w+self.offset-360, self.mid_h+300, self.mid_h + 400)
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            if self.state == 0:
+                self.protag.resetState()
+            else:
+                self.protag.setCure(True)
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
+
+
+class campsiteMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self, game)
+        self.state = 0
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w+self.offset-185, self.mid_h+300)
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.draw_info()
+            self.game.draw_text("Eat Food (Restores 250 Health)", 40, self.mid_w,
+                                self.mid_h+300, self.game.WHITE)
+            self.game.draw_text("Sleep (Restores 100 Mana)", 40, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        if self.game.DOWN_KEY or self.game.UP_KEY:
+            menuHoverSound.play()
+            self.state = self.cursor_two_options(
+                self.cursor_rect, self.state, 0, 1, self.mid_w+self.offset-170, self.mid_w+self.offset-170, self.mid_h+300, self.mid_h + 400)
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            if self.state == 0:
+                self.protag.adjustHealth(250)
+            else:
+                self.protag.adjustEnergy(100)
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
+
+
 class LevelUpMenu(Menu):
     def __init__(self, game, expGained):
         Menu.__init__(self, game)
@@ -227,7 +486,7 @@ class LevelUpMenu(Menu):
         while self.run_display:
             self.game.check_events()
             self.check_input()
-            self.game.display.blit(self.forestMenu, (0, 0))
+            self.game.display.blit(self.backMenu, (0, 0))
             self.displayStatInfo()
             self.game.draw_text("LEVEL UP!", 60, self.mid_w,
                                 self.mid_h-450, self.game.WHITE)
@@ -258,7 +517,6 @@ class LevelUpMenu(Menu):
         self.cursor_rect.midtop = (
             self.mid_w + self.offset-50, self.mid_h+400)
         if self.game.START_KEY:
-            print("yo")
             self.victory = VictoryMenu(self.game, self.expGained)
             self.game.curr_menu = self.victory
             menuConfirmSound.play()
@@ -268,7 +526,6 @@ class LevelUpMenu(Menu):
             self.statState = 0
             self.cursor_rect.midtop = (
                 self.mid_w-550 + self.offset-50, self.mid_h-250)
-            print(self.tempStat)
             if self.tempStat == 0:
                 self.protag.adjustattackDamage(-1)
             elif self.tempStat == 1:
@@ -305,38 +562,12 @@ class LevelUpMenu(Menu):
             self.triggerKey = True
         elif self.game.DOWN_KEY:
             menuHoverSound.play()
-            if self.statState == 0:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 0, 1, cursorXpos, cursorXpos, self.mid_h-250, self.mid_h-180)
-            elif self.statState == 1:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 1, 2, cursorXpos, cursorXpos, self.mid_h-180, self.mid_h-110)
-            elif self.statState == 2:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 2, 3, cursorXpos, cursorXpos, self.mid_h-110, self.mid_h-40)
-            elif self.statState == 3:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 3, 4, cursorXpos, cursorXpos, self.mid_h-40, self.mid_h+30)
-            elif self.statState == 4:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 4, 5, cursorXpos, cursorXpos, self.mid_h+30, self.mid_h+100)
+            self.statState = self.cursor_mult_options(
+                self.statState, cursorXpos, self.mid_h-250, 0, 70, 6, False)
         elif self.game.UP_KEY:
             menuHoverSound.play()
-            if self.statState == 1:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 1, 0, cursorXpos, cursorXpos, self.mid_h-180, self.mid_h-250)
-            elif self.statState == 2:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 2, 1, cursorXpos, cursorXpos, self.mid_h-110, self.mid_h-180)
-            elif self.statState == 3:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 3, 2, cursorXpos, cursorXpos, self.mid_h-40, self.mid_h-110)
-            elif self.statState == 4:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 4, 3, cursorXpos, cursorXpos, self.mid_h+30, self.mid_h-40)
-            elif self.statState == 5:
-                self.statState = self.cursor_two_options(
-                    self.cursor_rect, self.statState, 5, 4, cursorXpos, cursorXpos, self.mid_h-40, self.mid_h+30)
+            self.statState = self.cursor_mult_options(
+                self.statState, cursorXpos, self.mid_h-250, 0, 70, 6, True)
 
 
 class VictoryMenu(Menu):
@@ -346,10 +577,12 @@ class VictoryMenu(Menu):
 
     def display_menu(self):
         self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w + self.offset-50, self.mid_h+400)
         while self.run_display:
             self.game.check_events()
             self.check_input()
-            self.game.display.blit(self.forestMenu, (0, 0))
+            self.game.display.blit(self.backMenu, (0, 0))
             self.game.draw_text("VICTORY!", 60, self.mid_w,
                                 self.mid_h-450, self.game.WHITE)
             self.game.draw_text("Current Level: " + str(self.protag.getLevel()), 40, self.mid_w,
@@ -360,13 +593,18 @@ class VictoryMenu(Menu):
                                 self.mid_h-150, self.game.BLACK)
             self.game.draw_text("Health: " + str(self.protag.getCurrHealth()) + "/" + str(self.protag.getHealth()), 40, self.mid_w,
                                 self.mid_h-50, self.game.BLACK)
-            self.game.draw_text("Energy: " + str(self.protag.getCurrEnergy()) + "/" + str(self.protag.getEnergy()), 40, self.mid_w,
+            self.game.draw_text("Mana: " + str(self.protag.getCurrEnergy()) + "/" + str(self.protag.getEnergy()), 40, self.mid_w,
                                 self.mid_h+50, self.game.BLACK)
+            self.game.draw_text("Continue", 60, self.mid_w,
+                                self.mid_h+400, self.game.WHITE)
             self.draw_cursor()
             self.blit_screen(self.game.display)
 
     def check_input(self):
-        pass
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
 
 
 class gameOverMenu(Menu):
@@ -379,7 +617,7 @@ class gameOverMenu(Menu):
         while self.run_display:
             self.game.check_events()
             self.check_input()
-            self.game.display.blit(self.forestMenu, (0, 0))
+            self.game.display.blit(self.backMenu, (0, 0))
             self.game.draw_text("DEFEAT!", 60, self.mid_w,
                                 self.mid_h-450, self.game.RED)
             self.game.draw_text("Moment of Death: " + self.finishingBlow, 40, self.mid_w,
@@ -402,8 +640,91 @@ class gameOverMenu(Menu):
             self.run_display = False
 
 
-class BattleMenu(Menu):  # might need to pass in parameter to indicate difficulty of enemies
+class classMenu(Menu):
     def __init__(self, game):
+        Menu.__init__(self, game)
+        self.classState = 0
+        self.classList = initializations.globalVariables.classList
+
+    def display_menu(self):
+        self.run_display = True
+        self.cursor_rect.midtop = (
+            self.mid_w-550+self.offset-70, self.mid_h-250)
+        while self.run_display:
+            self.game.check_events()
+            self.check_input()
+            self.game.display.blit(self.backMenu, (0, 0))
+            self.game.draw_text("Pick your class!", 70, self.mid_w,
+                                self.mid_h-470, self.game.BLACK)
+            self.game.draw_text("Health: " + str(self.classList[self.classState].health), 40, self.mid_w,
+                                self.mid_h-390, self.game.WHITE)
+            self.game.draw_text("Mana: " + str(self.classList[self.classState].energy), 40, self.mid_w,
+                                self.mid_h-320, self.game.WHITE)
+            self.game.draw_text("Strength: " + str(self.classList[self.classState].attackDamage), 40, self.mid_w,
+                                self.mid_h-250, self.game.WHITE)
+            self.game.draw_text("Magic: " + str(self.classList[self.classState].magicDamage), 40, self.mid_w,
+                                self.mid_h-180, self.game.WHITE)
+            self.game.draw_text("Defense: " + str(self.classList[self.classState].physicalDefense), 40, self.mid_w,
+                                self.mid_h-110, self.game.WHITE)
+            self.game.draw_text("MagDef: " + str(self.classList[self.classState].magicDefense), 40, self.mid_w,
+                                self.mid_h-40, self.game.WHITE)
+            self.game.draw_text("Speed: " + str(self.classList[self.classState].speed), 40, self.mid_w,
+                                self.mid_h+30, self.game.WHITE)
+            self.game.draw_text("Luck: " + str(self.classList[self.classState].luck), 40, self.mid_w,
+                                self.mid_h+100, self.game.WHITE)
+            self.game.draw_text("Weapon: " + str(self.classList[self.classState].weapon.getName()), 40, self.mid_w,
+                                self.mid_h+170, self.game.WHITE)
+            self.game.draw_text("Armor: " + str(self.classList[self.classState].armor.getName()), 40, self.mid_w,
+                                self.mid_h+240, self.game.WHITE)
+            self.game.draw_text("Skills", 60, self.mid_w+450,
+                                self.mid_h-250, self.game.WHITE)
+            incrementer = 100
+            # make sure to set .equippedSkills to whatever class you pick
+            # or jsut whenever you look at skills, access the skills directly from player instead
+            for each_skill in self.classList[self.classState].getSkills():
+                self.game.draw_text(each_skill.getName(), 40, self.mid_w+450,
+                                    self.mid_h-250+incrementer, each_skill.getColor())
+                incrementer += 100
+            cursorXpos = self.mid_w-550
+            self.game.draw_text("Wizard", 60, cursorXpos,
+                                self.mid_h-250, self.game.WHITE)
+            self.game.draw_text("Warrior", 60, cursorXpos,
+                                self.mid_h-150, self.game.WHITE)
+            self.game.draw_text("Archer", 60, cursorXpos,
+                                self.mid_h-50, self.game.WHITE)
+            self.game.draw_text("Cleric", 60, cursorXpos,
+                                self.mid_h+50, self.game.WHITE)
+            self.draw_cursor()
+            self.blit_screen(self.game.display)
+
+    def check_input(self):
+        cursorXpos = self.mid_w-550+self.offset-70
+        if self.game.DOWN_KEY:
+            menuHoverSound.play()
+            self.classState = self.cursor_mult_options(
+                self.classState, cursorXpos, self.mid_h-(250), 0, 100, 4, False)
+        if self.game.UP_KEY:
+            menuHoverSound.play()
+            self.classState = self.cursor_mult_options(
+                self.classState, cursorXpos, self.mid_h-(250), 0, 100, 4, True)
+        if self.game.START_KEY:
+            menuConfirmSound.play()
+            initializations.globalVariables.protagonist = self.classList[self.classState]
+            # self.game.curr_menu = BattleMenu(
+            #    self.game, [self.monsters["Ghost"], self.monsters["Slime"]], 2)
+            self.game.curr_menu = directionsMenu(self.game)
+            self.run_display = False
+            # tempClassState = self.classState
+            # self.classState = self.cursor_two_options(
+            #    self.cursor_rect, self.classState, self.classState, self.classState+1, cursorXpos, cursorXpos, self.mid_h-(250)+(tempClassState*100), self.mid_h-(250)+((tempClassState+1)*100))
+
+            # if self.classState == 0:
+            #    self.classState = self.cursor_two_options(
+            #        self.cursor_rect, self.classState, 0, 1, cursorXpos, cursorXpos, self.mid_h-250, self.mid_h-150)
+
+
+class BattleMenu(Menu):  # might need to pass in parameter to indicate difficulty of enemies
+    def __init__(self, game, monsterList, amount):
         Menu.__init__(self, game)
         self.state = "Attack"
         self.state2 = "Enemy1"
@@ -420,10 +741,12 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         self.cursor_on_enemies = False
         self.cursor_on_skillMenu = False
         self.use_skill = False
-        self.battleTroop = []
+        # self.battleTroop = assembleBattleTroop(globalVariables.monsterList1, 2)
+        self.battleTroop = assembleBattleTroop(monsterList, amount)
         self.information1 = ("", self.game.BLACK)
         self.information2 = ("", self.game.BLACK)
         self.information3 = ("", self.game.BLACK)
+        self.information4 = ("", self.game.BLACK)
         self.expGained = 0
         self.defeatMessage = 0
 
@@ -449,7 +772,6 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
 
     def winBattle(self):
         if len(self.battleTroop) == 0:
-            victorySound.play()
             # if level up, go to levelup menu, else go to victoryMenu
             if self.levelUpCalculation(globalVariables.protagonist, self.expGained):
                 self.levelUp = LevelUpMenu(self.game, self.expGained)
@@ -462,39 +784,37 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
 
     def display_menu(self):
         self.run_display = True
-        self.battleTroop = assembleBattleTroop(globalVariables.monsterList1, 2)
         for i in self.battleTroop:
             self.expGained += i.getExperienceReward()
         while self.run_display:
             self.display_again()
 
-    def holdeR(self):
-        self.restart = MainMenu(self.game)
-        self.game.curr_menu = self.restart
-        initializations.skillsEquipment.init()  # reset protag stats
-        self.run_display = False
-
     def display_again(self):
         self.game.check_events()
         self.check_input()
-        self.game.display.blit(self.forestMenu, (0, 0))
+        self.game.display.blit(self.backMenu, (0, 0))
         self.winBattle()
         self.turnOrder = "Turn Order: " + self.calculate_turn_order()
-        self.game.draw_text("Your Health: " + str(globalVariables.protagonist.getCurrHealth()), 40, self.mid_w,
+        self.game.draw_text("Your Health: " + str(self.protag.getCurrHealth()), 40, self.mid_w,
+                            self.mid_h-450, self.game.BLACK)
+        self.game.draw_text("Your Mana: " + str(self.protag.getCurrEnergy()), 40, self.mid_w,
                             self.mid_h-400, self.game.BLACK)
-        self.game.draw_text("Your Energy: " + str(globalVariables.protagonist.getCurrEnergy()), 40, self.mid_w,
-                            self.mid_h-350, self.game.BLACK)
+        if self.protag.getState()[0] != "":
+            self.game.draw_text("Ailments: " + self.protag.getState()[0] + " for " + str(self.protag.getState()[1]) + " turns", 40, self.mid_w,
+                                self.mid_h-350, (229, 255, 0))
         if (len(self.battleTroop) == 1):
             self.draw_enemy(self.battleTroop[0], 180)
         elif (len(self.battleTroop) == 2):
             self.draw_enemy(self.battleTroop[0], 180)
             self.draw_enemy(self.battleTroop[1], 0)
         self.game.draw_text(
-            self.information1[0], 30, self.mid_w, self.mid_h+150, self.information1[1])
+            self.information1[0], 40, self.mid_w, self.mid_h+190, self.information1[1])
         self.game.draw_text(
-            self.information2[0], 30, self.mid_w, self.mid_h+180, self.information2[1])
+            self.information2[0], 40, self.mid_w, self.mid_h+230, self.information2[1])
         self.game.draw_text(
-            self.information3[0], 30, self.mid_w, self.mid_h+210, self.information3[1])
+            self.information3[0], 40, self.mid_w, self.mid_h+270, self.information3[1])
+        self.game.draw_text(
+            self.information4[0], 40, self.mid_w, self.mid_h+310, self.information4[1])
         self.game.draw_text(self.turnOrder, 30, self.mid_w,
                             self.mid_h-290, self.game.WHITE)
 
@@ -508,12 +828,12 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
         # occurs when user is selecting a skill
         elif self.show_skills == True:
             incrementer = 0
-            for each_skill in globalVariables.equippedSkills:
-                self.game.draw_text(globalVariables.equippedSkills[self.skillState].getDescription(), 40, self.mid_w,
+            for each_skill in self.protag.getSkills():
+                self.game.draw_text(self.protag.getSkills()[self.skillState].getDescription(), 40, self.mid_w,
                                     self.mid_h+10, self.game.BLACK)
                 self.game.draw_text(each_skill.getName(), 40, self.mid_w-220+incrementer,
                                     self.mid_h+60, each_skill.getColor())
-                self.game.draw_text("Energy: " + str(each_skill.getEnergy()), 25, self.mid_w-220+incrementer,
+                self.game.draw_text("Mana: " + str(each_skill.getEnergy()), 25, self.mid_w-220+incrementer,
                                     self.mid_h+90, self.game.BLACK)
                 self.game.draw_text("Type: " + each_skill.getSkillType(), 25, self.mid_w-220+incrementer,
                                     self.mid_h+120, self.game.BLACK)
@@ -525,8 +845,15 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
     def draw_enemy(self, enemy, xOffset):
         self.game.draw_text(
             enemy.getName(), 40, self.mid_w-xOffset, self.mid_h-210, self.game.BLACK)
-        self.game.draw_text(
-            "Health: " + enemy.getStringHealth(), 30, self.mid_w-xOffset, self.mid_h-170, self.game.BLACK)
+        if self.protag.getState()[0] == "Blind":
+            self.game.draw_text(
+                "Health: ???", 30, self.mid_w-xOffset, self.mid_h-170, self.game.BLACK)
+        else:
+            self.game.draw_text(
+                "Health: " + enemy.getStringHealth(), 30, self.mid_w-xOffset, self.mid_h-170, self.game.BLACK)
+        self.game.display.blit(
+            pygame.transform.scale(pygame.image.load(
+                os.path.join('Assets', enemy.getOriginalName() + ".png")), (125, 125)), (self.mid_w-xOffset-60, self.mid_h-130))
 
     def reinitialize(self):
         self.state = "Attack"
@@ -538,7 +865,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
 
     def calculate_turn_order(self):
         self.speedDict = {}
-        playerSpeed = globalVariables.protagonist.getSpeed()
+        playerSpeed = self.protag.speed
         self.speedDict['Player'] = playerSpeed
         # create a dictionary that match
         # each player & enemy with their respective speeds.
@@ -560,6 +887,7 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
     def attack(self, skill):
         position_of_enemy1X = self.mid_w-180 + self.offset
         position_of_enemy1Y = self.mid_h-210
+        enemyTarget = ""
         if (skill.getEnergy() > self.protag.getCurrEnergy()):
             menuErrorSound.play()
             self.state2 = "Enemy1"
@@ -567,6 +895,13 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                 self.attackx + self.offset, self.attacky)
             self.reinitialize()
             return
+        elif (skill.getSkillType() == "Healing" or skill.getSkillType() == "Cleanse" or skill.getSkillType() == "Buff"):
+            self.player_turn = False
+            self.attackTurnOrder(enemyTarget, skill)
+            self.player_turn = True
+            self.cursor_rect.midtop = (
+                self.attackx + self.offset, self.attacky)
+            self.reinitialize()
         elif self.game.RIGHT_KEY or self.game.LEFT_KEY:
             if (len(self.battleTroop) >= 2):
                 menuHoverSound.play()
@@ -595,22 +930,67 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             if i == element:
                 self.turnList.remove(i)
 
+    def checkPoison(self):
+        if self.protag.getState()[0] == "Poison":
+            self.protag.adjustHealth(-1*(0.10*self.protag.health))
+            self.protag.decrementState()
+            self.checkDefeat("You died from poison.")
+            return True
+            return ("You took " + str(0.10*self.protag.health) + " damage from poison.")
+
+    def checkSilence(self):
+        if self.protag.getState()[0] == "Silence":
+            self.protag.decrementState()
+            return True
+
+    def checkBlind(self):
+        if self.protag.getState()[0] == "Blind":
+            self.protag.decrementState()
+            return True
+
+    def checkAllAilments(self):
+        poison = self.checkPoison()
+        silence = self.checkSilence()
+        blind = self.checkBlind()
+        if poison:
+            return ("You took " + str(0.10*self.protag.health) + " damage from poison.")
+        if silence:
+            return ("You are silenced and can only use physical attacks or skills.")
+        if blind:
+            return ("You are blinded and cannot see your enemy's health.")
+        return ""
+
+    def checkDefeat(self, deathInfo):
+        if (self.protag.getCurrHealth() <= 0):
+            self.defeat = gameOverMenu(self.game, deathInfo)
+            self.game.curr_menu = self.defeat
+            self.run_display = False
+            return True
+        return False
+
     def attackTurnOrder(self, enemyTarget, skill):
         counter = 1
+        self.information1 = ("", self.game.BLACK)
+        self.information2 = ("", self.game.BLACK)
+        self.information3 = ("", self.game.BLACK)
         for eachEntity in self.turnList:
             if eachEntity == "Player":
-                skillInfo = skill.executeSkill(
-                    enemyTarget, globalVariables.protagonist)
-                if (enemyTarget.getHealth() <= 0):
-                    self.battleTroop.remove(enemyTarget)
-                    skillInfo = "You defeated the " + enemyTarget.getName() + "!"
-                    self.cursor_rect.midtop = (
-                        self.mid_w-180 + self.offset, self.mid_h-210)
-                    self.deleteFromList(enemyTarget.getName())
-                    self.state2 = "Enemy1"
-                    self.information1 = ("", self.game.BLACK)
-                    self.information2 = ("", self.game.BLACK)
-                    self.information3 = ("", self.game.BLACK)
+                if skill.getSkillType() == "Healing" or skill.getSkillType() == "Cleanse" or skill.getSkillType() == "Buff":
+                    skillInfo = skill.executeSkill(
+                        self.protag, self.protag)
+                else:
+                    if(self.protag.getState()[0] == "Silence" and skill.getSkillType() != "Physical"):
+                        skillInfo = "You tried to use a non-physical skill, but you were silenced!"
+                    else:
+                        skillInfo = skill.executeSkill(
+                            enemyTarget, self.protag)
+                        if (enemyTarget.getHealth() <= 0):
+                            self.battleTroop.remove(enemyTarget)
+                            skillInfo = "You defeated the " + enemyTarget.getName() + "!"
+                            self.cursor_rect.midtop = (
+                                self.mid_w-180 + self.offset, self.mid_h-210)
+                            self.deleteFromList(enemyTarget.getName())
+                            self.state2 = "Enemy1"
                 if counter == 1:
                     self.information1 = (skillInfo, self.game.WHITE)
                 elif counter == 2:
@@ -618,8 +998,14 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                 elif counter == 3:
                     self.information3 = (skillInfo, self.game.WHITE)
             else:
-                skillInfo = Fighters.battle.enemyAction(
-                    self.nameToEnemy(eachEntity))
+                enemy = self.nameToEnemy(
+                    eachEntity)
+                chosenSkill = enemy.randomSkillSelection()
+                if chosenSkill.getSkillType() != "Healing":
+                    skillInfo = chosenSkill.executeSkill(self.protag, enemy)
+                else:
+                    skillInfo = chosenSkill.executeSkill(
+                        random.choice(self.battleTroop), enemy)
                 if counter == 1:
                     self.information1 = (skillInfo, self.game.RED)
                 elif counter == 2:
@@ -632,6 +1018,12 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                     self.run_display = False
                     break
             counter += 1
+        self.information4 = (
+            self.checkAllAilments(), (229, 255, 0))
+        if self.protag.getState()[1] <= 0:
+            self.protag.resetState()
+            self.information4 = (
+                "The ailment you had wore off.", (229, 255, 0))
 
     def nameToEnemy(self, name):
         for eachEnemy in self.battleTroop:
@@ -642,39 +1034,20 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
     def check_input(self):
         # this is when the player uses regular attack
         if self.cursor_on_enemies and self.player_turn:
-            self.attack(globalVariables.everySkill[0])
+            self.attack(skillsEquipment.basicAttack)
         # this is to manage the cursor when the skill menu is open.
         elif self.use_skill and self.player_turn:
-            self.attack(globalVariables.equippedSkills[self.skillState])
+            self.attack(self.protag.getSkills()[self.skillState])
+        # toggles between skills when opening skill menu
         elif self.show_skills and self.player_turn:
             if self.game.RIGHT_KEY:
                 menuHoverSound.play()
-                if self.skillState == 0:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 0, 1,
-                                                              self.mid_w-220+self.offset, self.mid_w-50+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 1:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 1, 2,
-                                                              self.mid_w-50+self.offset, self.mid_w+120+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 2:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 2, 3,
-                                                              self.mid_w+120+self.offset, self.mid_w+290+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 3:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 3, 0,
-                                                              self.mid_w+290+self.offset, self.mid_w-220+self.offset, self.mid_h+60, self.mid_h+60)
+                self.skillState = self.cursor_mult_options(
+                    self.skillState, self.mid_w-220+self.offset, self.mid_h+60, 170, 0, 4, False)
             if self.game.LEFT_KEY:
                 menuHoverSound.play()
-                if self.skillState == 0:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 0, 3,
-                                                              self.mid_w-220+self.offset, self.mid_w+290+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 1:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 1, 0,
-                                                              self.mid_w-50+self.offset, self.mid_w-220+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 2:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 2, 1,
-                                                              self.mid_w+120+self.offset, self.mid_w-50+self.offset, self.mid_h+60, self.mid_h+60)
-                elif self.skillState == 3:
-                    self.skillState = self.cursor_two_options(self.cursor_rect, self.skillState, 3, 2,
-                                                              self.mid_w+290+self.offset, self.mid_w+120+self.offset, self.mid_h+60, self.mid_h+60)
+                self.skillState = self.cursor_mult_options(
+                    self.skillState, self.mid_w-220+self.offset, self.mid_h+60, 170, 0, 4, True)
             if self.game.BACK_KEY:
                 self.skillState = 0
                 menuBackSound.play()
@@ -685,8 +1058,9 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                 menuConfirmSound.play()
                 # self.show_skills = False
                 # self.attack(globalVariables.equippedSkills[self.skillState])
-                self.cursor_rect.midtop = (
-                    self.mid_w-180 + self.offset, self.mid_h-210)
+                if self.protag.skillList[self.skillState].getSkillType() != "Healing":
+                    self.cursor_rect.midtop = (
+                        self.mid_w-180 + self.offset, self.mid_h-210)
                 self.use_skill = True
         elif self.game.BACK_KEY:
             menuBackSound.play()
@@ -695,14 +1069,8 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
             self.reinitialize()
         elif self.game.UP_KEY or self.game.DOWN_KEY:
             menuHoverSound.play()
-            if self.state == 'Attack':
-                self.state = "Skills"
-                self.cursor_rect.midtop = (
-                    self.skillsx + self.offset, self.skillsy)
-            elif self.state == "Skills":
-                self.state = 'Attack'
-                self.cursor_rect.midtop = (
-                    self.attackx + self.offset, self.attacky)
+            self.state = self.cursor_two_options(
+                self.cursor_rect, self.state, 'Attack', "Skills", self.attackx + self.offset, self.skillsx + self.offset, self.attacky, self.skillsy)
         elif self.game.START_KEY:
             menuConfirmSound.play()
             if self.state == "Attack":
@@ -717,116 +1085,3 @@ class BattleMenu(Menu):  # might need to pass in parameter to indicate difficult
                 # maybe instead of a new menu, we can just rewrite the text?
                 # because we want most of the text to stay
             pass
-
-
-class InventoryMenu(Menu):
-    def __init__(self, game):
-        Menu.__init__(self, game)
-        self.invMenu = pygame.transform.scale(pygame.image.load(
-            os.path.join('Assets', 'inventoryGrid.png')), (self.game.WIDTH, self.game.HEIGHT))
-        self.cursor_rect.midtop = (60, 20)
-        # these next two variables indicate how much we want to move the cursor when going horizontal or vertical.
-        self.moveCursorHorizontal = 100
-        self.moveCursorVertical = 130
-        # The inventory system is a grid, 9x4.
-        # Our bag class organizes items in a one dimensional array of 36 items (this is in the variable called "slots").
-        # Our inventory grid is just a 2d array representation of the items in our bag; so 36 items represented in a 9x4 grid.
-        # We will use the gridPosition to see what square in the grid we are in,
-        # and then we will use that to see how it corresponds with the item in that bag slot.
-        self.gridPosition = 1
-
-    def display_menu(self):
-        self.run_display = True
-        globalVariables.itemBag.addToInventory(skillsEquipment.silverSword)
-        globalVariables.itemBag.addToInventory(skillsEquipment.silverSword)
-        print(globalVariables.itemBag.slots)
-        while self.run_display:
-            self.game.check_events()
-            self.check_input()
-            self.game.display.fill((0, 0, 0))
-            # obviously this isn't going to be in the final iteration!
-            # render is responsible for drawing each item in each inventorySlot in the bag
-            globalVariables.itemBag.render(self.game.display)
-            # self.game.display.blit(self.invMenu, (0, 0))
-
-            # should loop through Inventory and access each InventorySlot
-            self.draw_cursor_star()
-            self.blit_screen(self.game.display)
-
-    def calc_pos_x(self):
-        # so... each square in the grid is 100x100.
-        # within each square, we want the cursor to be 60 units in.
-
-        # go to the square before (self.gridposition-1), mul
-        initialResult = ((self.gridPosition-1) * 100) + 60
-        while initialResult > 900:
-            initialResult -= 900
-        return initialResult
-
-    def calc_pos_y(self):
-        initialResult = ((self.gridPosition-9) * 100) + 20
-        while initialResult > 400:
-            initialResult -= 400
-        return initialResult
-
-    def move_cursor(self):
-        # Thinking question: How do we know which slot in the grid the cursor is in?
-        # ANSWER:
-        # Start at position 1. Everytime you move right, increment position by 1, and decrement by 1 when going left.
-        # When you go down, you are actually just moving your position up by 9, and vice versa when going up.
-        if self.game.BACK_KEY:
-            menuBackSound.play()
-            self.game.curr_menu = self.game.main_menu
-            self.run_display = False
-        elif self.game.START_KEY:
-            # how are we going to switch between screens based on the slot?
-            # maybe it will always switch to the same menu, but the menu changes based on the item selected!
-            # this if statement checks if the inventorySlot we are hovering actually has an item
-            if isinstance(globalVariables.itemBag.slots[self.gridPosition], BattlePrep.inventorySlot.InventorySlot):
-                print("success")
-            # correspond the grid position with the index in slots!!!
-            menuHoverSound.play()
-        elif self.game.RIGHT_KEY:
-            menuHoverSound.play()
-            if self.gridPosition == 36:
-                pass
-            elif self.gridPosition % 9 == 0:
-                self.gridPosition += 1
-                self.cursor_rect.midtop = (
-                    self.calc_pos_x(), self.calc_pos_y())
-            else:
-                self.gridPosition += 1
-                self.cursor_rect.midtop = (
-                    self.calc_pos_x(), self.cursor_rect.y)
-
-        elif self.game.LEFT_KEY:
-            menuHoverSound.play()
-            if self.gridPosition == 1:
-                pass
-            elif self.gridPosition % 9 == 1:
-                self.gridPosition -= 1
-                self.cursor_rect.midtop = (
-                    self.calc_pos_x(), self.calc_pos_y())
-            else:
-                self.gridPosition -= 1
-                self.cursor_rect.midtop = (
-                    self.calc_pos_x(), self.cursor_rect.y)
-
-    def check_input(self):
-        self.move_cursor()
-
-
-"""
-        elif self.game.UP_KEY:
-            menuHoverSound.play()
-            self.gridPosition -= 9
-            self.cursor_rect.midtop = (
-                self.cursor_rect.x, self.calc_pos_y())
-
-        elif self.game.DOWN_KEY:
-            menuHoverSound.play()
-            self.gridPosition += 9
-            self.cursor_rect.midtop = (
-                self.cursor_rect.x, self.calc_pos_y())
-    # use ifInstance when clicking enter... if you click enter on something that has no class, then do nothing!
-"""

@@ -2,7 +2,7 @@ import pygame
 
 
 class Weapon:
-    def __init__(self, name, speed, attackDamage, magicDamage, criticalRate, element, scope, image):
+    def __init__(self, name, speed, attackDamage, magicDamage, criticalRate, element, scope):
         self.name = name
         self.speed = speed
         self.attackDamage = attackDamage
@@ -10,7 +10,6 @@ class Weapon:
         self.criticalRate = criticalRate
         self.element = element
         self.scope = scope
-        self.image = image  # filepath to image
 
     def getName(self):
         return self.name

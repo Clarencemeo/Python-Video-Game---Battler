@@ -4,8 +4,9 @@ from random import randint
 
 class Enemy:
     def __init__(self, health, skillDictionary, dropsDictionary, name, goldReward, experienceReward, speed, attackDamage, magicDamage,
-                 physicalDefense, magicDefense, elementalResistances, critRate):
+                 physicalDefense, magicDefense, elementalResistances, critRate, originalName):
         self.health = health
+        self.maxHealth = health
         self.skillDictionary = skillDictionary
         self.dropsDictionary = dropsDictionary
         self.name = name
@@ -14,21 +15,49 @@ class Enemy:
         self.experienceReward = experienceReward
         self.speed = speed
         self.turnGauge = 0
+        self.preventativeCure = False
         self.attackDamage = attackDamage
         self.magicDamage = magicDamage
         self.physicalDefense = physicalDefense
         self.magicDefense = magicDefense
         self.elementalResistances = elementalResistances
         self.criticalRate = critRate
+        self.originalName = originalName
+        self.state = ()
+
+    # original name preserves the name even after
+    # the other name is modified after deepCopy in the case of duplicates
+    def getOriginalName(self):
+        return self.originalName
+
+    def getCure(self):
+        return self.preventativeCure
+
+    def setCure(self, val):  # val is bool
+        self.preventativeCure = val
 
     def adjustHealth(self, health):
         self.health += health
+        if self.health > self.maxHealth:
+            self.health = self.maxHealth
 
     # we're actually not ever checking the monsters energy,
     # this is just to make things smooth when making the functions
     # that execute skills.
     def adjustNegativeEnergy(self, energy):
         self.energy -= energy
+
+    def decrementState(self):
+        self.state[1] -= 1
+
+    def setState(self, state):
+        self.state = state
+
+    def getBuffs(self):
+        pass
+
+    def resetState(self):
+        self.state = ()
 
     def getName(self):
         return self.name
@@ -38,6 +67,9 @@ class Enemy:
 
     def getHealth(self):
         return self.health
+
+    def getMaxHealth(self):
+        return self.maxHealth
 
     def getStringHealth(self):
         return str(self.health)
