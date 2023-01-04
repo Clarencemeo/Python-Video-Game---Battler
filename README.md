@@ -1,3 +1,7 @@
+# How to Run
+Download the main.zip file, unzip it, and run main.exe! 
+You can download it directly from the repository or from this google drive link: https://drive.google.com/file/d/1DuijYPIBIyvCLwMdo9i0LvYH0On2OeOQ/view?usp=sharing
+
 # Pictures
 ![image](https://user-images.githubusercontent.com/77476725/210347185-2ab45491-de83-4faa-b544-8401369e5ea6.png)
 ![image](https://user-images.githubusercontent.com/77476725/210347212-42e711df-11c6-4b93-8832-f88f552271c7.png)
@@ -7,9 +11,6 @@
 ![image](https://user-images.githubusercontent.com/77476725/210347928-4448a455-87cc-4bd9-87a4-1b405ef3d838.png)
 ![image](https://user-images.githubusercontent.com/77476725/210348598-1cdf649d-299f-41d3-a5d3-04df46145f56.png)
 ![image](https://user-images.githubusercontent.com/77476725/210466644-1b968f63-53ab-4139-b1be-03294f81e29d.png)
-
-# How to Run
-- Run main.py
 
 ### Features
 
@@ -33,4 +34,3 @@
   - Ailment Skills, such as Blind which makes the player unable to see the health of enemies and where each path leads in their exploration.
 - Multiple gameplay elements, such as Luck, Speed, Energy, Status Ailments (Blindness, Poison, Silence) and Elemental Resistances
 in order to add more depth
-- Pictures coming soon
