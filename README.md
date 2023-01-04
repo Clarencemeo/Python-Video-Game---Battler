@@ -8,6 +8,8 @@
 ![image](https://user-images.githubusercontent.com/77476725/210348598-1cdf649d-299f-41d3-a5d3-04df46145f56.png)
 ![image](https://user-images.githubusercontent.com/77476725/210466644-1b968f63-53ab-4139-b1be-03294f81e29d.png)
 
+# How to Run
+- Run main.py
 
 ### Features
 
