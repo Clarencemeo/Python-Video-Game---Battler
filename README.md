@@ -1,6 +1,6 @@
 # How to Run
 Download the main.zip file, unzip it, and run main.exe! 
-You can download it directly from the repository or from this google drive link: https://drive.google.com/file/d/1DuijYPIBIyvCLwMdo9i0LvYH0On2OeOQ/view?usp=sharing
+You can download it directly from the repository.
 
 # Pictures
 ![image](https://user-images.githubusercontent.com/77476725/210347185-2ab45491-de83-4faa-b544-8401369e5ea6.png)
