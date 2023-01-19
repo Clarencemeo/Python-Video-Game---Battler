@@ -64,19 +64,19 @@ class LevelUpMenu(menu.Menu):
             self.blit_screen(self.game.display)
 
     # the state is what's tracking where the cursor currently is.
-    def adjustStats(self, state):
+    def adjustStats(self, state, number):
         if state == 0:
-            self.protag.adjustattackDamage(-1)
+            self.protag.adjustattackDamage(number)
         elif state == 1:
-            self.protag.adjustmagicDamage(-1)
+            self.protag.adjustmagicDamage(number)
         elif state == 2:
-            self.protag.adjustDefense(-1)
+            self.protag.adjustDefense(number)
         elif state == 3:
-            self.protag.adjustMagDef(-1)
+            self.protag.adjustMagDef(number)
         elif state == 4:
-            self.protag.adjustSpeed(-1)
+            self.protag.adjustSpeed(number)
         elif state == 5:
-            self.protag.adjustLuck(-1)
+            self.protag.adjustLuck(number)
 
     def confirmation(self):
         self.statState = 6  # confirm  button
@@ -92,7 +92,7 @@ class LevelUpMenu(menu.Menu):
             self.statState = 0
             self.cursor_rect.midtop = (
                 self.mid_w-550 + self.offset-50, self.mid_h-250)
-            self.adjustStats(self.tempStat)
+            self.adjustStats(self.tempStat, -1)
             self.triggerKey = False
 
     def check_input(self):
@@ -101,7 +101,7 @@ class LevelUpMenu(menu.Menu):
             self.confirmation()
         elif self.game.START_KEY:
             self.menuConfirmSound.play()
-            self.adjustStats(self.statState)
+            self.adjustStats(self.statState, 1)
             self.tempStat = self.statState
             self.triggerKey = True
         elif self.game.DOWN_KEY:
